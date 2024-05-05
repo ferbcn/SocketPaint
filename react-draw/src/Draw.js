@@ -164,6 +164,7 @@ export default function Draw({ initColor="#EE1133" }) {
                  onMouseMove={handleWindowMouseMove} 
                  onMouseDown={handleMouseDown} 
                  onMouseUp={handleMouseUp}
+                 onMouseLeave={handleMouseUp}
                  onTouchStart={e => handleTouchStart(e)}
                  onTouchEnd={handleMouseUp}
                  onTouchMove={e => handleTouch(e)}
