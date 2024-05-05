@@ -19,7 +19,9 @@ export default function Draw() {
         }, {passive: false});
         
         // get uuid from /api/getuuid
-        fetch('http://localhost:8080/api/getuuid')
+        const host = process.env.NODE_ENV === 'production' ? window.location.host : 'localhost:8080';
+        const protocol = window.location.protocol;
+        fetch(`${protocol}//${host}/api/getuuid`)
             .then(response => response.json())
             .then(data => {
                 console.log(data);
