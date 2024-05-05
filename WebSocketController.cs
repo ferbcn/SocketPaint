@@ -47,7 +47,7 @@ public class WebSocketController : Controller
             if (receiveResult.MessageType == WebSocketMessageType.Close)
             {
                 Console.WriteLine("Received close message");
-                break;
+                continue;
             }
             
             foreach (var socket in _webSocketManager.GetAllSockets())
@@ -59,10 +59,6 @@ public class WebSocketController : Controller
                         receiveResult.MessageType,
                         receiveResult.EndOfMessage,
                         CancellationToken.None);
-                }
-                else
-                {
-                    _webSocketManager.RemoveSocket(socket); // Remove the WebSocket when it's done
                 }
             }
         } 

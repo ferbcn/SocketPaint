@@ -8,6 +8,7 @@ export default function Draw() {
     const [coords, setCoords] = useState({x: 0, y: 0});
     const [mouseDown, setMouseDown] = useState(false);
     const [selectedColor, setSelectedColor] = useState("#EE1133");
+    const [penSize, setPenSize] = useState(5);
     const canvasRef = useRef(null);
     const [uuid, setUuid] = useState(null);
     
@@ -55,7 +56,8 @@ export default function Draw() {
         const msg = {
             x: coords.x,
             y: coords.y,
-            color: selectedColor
+            color: selectedColor,
+            size: penSize
         }
         sendPixel(msg)
     };
@@ -72,7 +74,8 @@ export default function Draw() {
             const msg = {
                 x: coords.x,
                 y: coords.y,
-                color: selectedColor
+                color: selectedColor,
+                size: penSize
             }
             sendPixel(msg)
         }
@@ -84,7 +87,7 @@ export default function Draw() {
     function onMessageReceived(msg) {
         msg = JSON.parse(msg);
         if (msg.hasOwnProperty('color')) {
-            drawOnCanvas(msg.x, msg.y, msg.color);
+            drawOnCanvas(msg.x, msg.y, msg.color, msg.size);
         }
         else if (msg.hasOwnProperty('command') && (msg.command === 'clear')) {
             clearCanvas();
@@ -93,13 +96,13 @@ export default function Draw() {
 
     registerOnMessageCallback(onMessageReceived.bind(this));
     
-    function drawOnCanvas(x, y, color) {
+    function drawOnCanvas(x, y, color, size) {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
         ctx.fillStyle = color;
         //ctx.fillRect(x, y-60, 3, 3); // Draw a 5x5 square at the mouse position
         ctx.beginPath();
-        ctx.arc(x, y-60, 5, 0, 2 * Math.PI);
+        ctx.arc(x, y-60, size, 0, 2 * Math.PI);
         ctx.fill();
     }
     
@@ -137,15 +140,8 @@ export default function Draw() {
                     }}/>
                     <input type={"color"} value={selectedColor} 
                            onChange={e => setSelectedColor(e.target.value)}/>
-                    <div className={"mousePos"}>
-                        Mouse positioned at:{' '}<b>({coords.x}, {coords.y})</b>
-                    </div>
-                    <div>
-                        Mouse is Down:{' '}<b>{mouseDown ? 'Yes' : 'No'}</b>
-                    </div>
-                    <div>
-                        Selected color:{' '}<b>{selectedColor}</b>
-                    </div>
+                    <input type={"range"} min={1} max={50} value={penSize} 
+                           onChange={e => setPenSize(e.target.value)}/>
                 </div>
             </div>
             <div className={"uuid-field"}>
