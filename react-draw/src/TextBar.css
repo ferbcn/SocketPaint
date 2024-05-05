@@ -1,0 +1,26 @@
+.textbar {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+
+.textbar-input {
+  flex-grow: 1;
+  box-sizing: border-box;
+  font-size: 16px;
+}
+
+.textbar-send {
+  border-radius: 0;
+  border: none;
+}
+
+button {
+  padding: 10px;
+  border-radius: 5px;
+  background-color: rgba(165, 168, 168, 0.5);
+  color: white;
+  cursor: pointer;
+  max-width: 80px;
+  height: 40px;
+}

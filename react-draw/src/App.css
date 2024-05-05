@@ -1,0 +1,124 @@
+:root {
+  --accentColor: #61dafb;
+  --bgColor: #282c34;
+}
+
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+a{
+  color: white;
+}
+
+a:visited{
+  color: #c0bcbc;
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: var(--accentColor);
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+body{
+    background-color: var(--bgColor);
+    color: white;
+}
+
+.container, .full-container{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.full-container {
+  width: 100%;
+}
+
+.container-row{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+}
+
+.logo{
+  max-width: 100px;
+  max-height: 100px;
+}
+
+nav {
+  background-color: var(--bgColor);;
+  height: 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0;
+  box-shadow: 0 0 10px var(--accentColor);;
+}
+
+nav ul {
+  list-style-type: none;
+  display: flex;
+}
+
+nav ul li {
+  margin-left: 20px;
+}
+
+nav ul li a {
+  text-decoration: none;
+  color: var(--accentColor);;
+  font-size: 20px;
+  transition: color 0.5s ease;
+}
+
+nav ul li a:hover {
+  color: var(--accentColor);
+}
+
+.draggable-text{
+  cursor: grab;
+  user-select: none;
+  font-size: 20px;
+  color: var(--accentColor);
+  margin: 10px;
+}
+
+.container-center{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20vh;
+}

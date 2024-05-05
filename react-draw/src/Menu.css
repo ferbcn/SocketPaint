@@ -1,0 +1,31 @@
+.menu {
+    display: flex;
+    flex-direction: row;
+    align-content: space-evenly;
+    margin: 10px;
+    height: 5vh;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.menu-button {
+    color: var(--bgColor);
+    align-items: center;
+    margin: 5px;
+    height: 3vh;
+    background: darkgray;
+    border: none;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    transition-duration: 0.4s;
+    cursor: pointer;
+    box-shadow: 0 0 5px var(--accentColor);
+    width: 100px;
+    font-weight: bold;
+}
+
+.menu-button:hover {
+    background: var(--accentColor);
+    color: black;
+}

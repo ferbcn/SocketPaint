@@ -1,0 +1,21 @@
+.small-avatar{
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.large-avatar{
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+/* This will apply if the viewing area is up to 600px */
+@media screen and (max-width: 600px) {
+    .large-avatar{
+        width: 50px;
+        height: 50px;
+    }
+}
