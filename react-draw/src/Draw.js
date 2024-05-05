@@ -3,12 +3,13 @@ import './Draw.css';
 
 import {registerOnMessageCallback, send } from "./websocket";
 
-export default function Draw() {
+export default function Draw({ canvasColor="#FFFFFF", initColor="#EE1133" }) {
     const [canvasSize, setCanvasSize] = useState({x: null, y: null});
     const [coords, setCoords] = useState({x: 0, y: 0});
     const [mouseDown, setMouseDown] = useState(false);
-    const [selectedColor, setSelectedColor] = useState("#EE1133");
-    const [penSize, setPenSize] = useState(5);
+    const [selectedColor, setSelectedColor] = useState(initColor);
+    const [penSize, setPenSize] = useState(25);
+    const [penType, setPenType] = useState("round");
     const canvasRef = useRef(null);
     const [uuid, setUuid] = useState(null);
     
@@ -53,13 +54,7 @@ export default function Draw() {
 
     const handleMouseDown = event => {
         setMouseDown(true)
-        const msg = {
-            x: coords.x,
-            y: coords.y,
-            color: selectedColor,
-            size: penSize
-        }
-        sendPixel(msg)
+        sendPixel()
     };
     const handleMouseUp = event => {
         setMouseDown(false)
@@ -71,23 +66,24 @@ export default function Draw() {
             y: event.clientY,
         });
         if (mouseDown) {
-            const msg = {
-                x: coords.x,
-                y: coords.y,
-                color: selectedColor,
-                size: penSize
-            }
-            sendPixel(msg)
+            sendPixel()
         }
     };
-    function sendPixel(msg) {
+    function sendPixel() {
+        const msg = {
+            x: coords.x,
+            y: coords.y,
+            color: selectedColor,
+            size: penSize,
+            type: penType
+        }
         send(JSON.stringify(msg))
     }
     
     function onMessageReceived(msg) {
         msg = JSON.parse(msg);
         if (msg.hasOwnProperty('color')) {
-            drawOnCanvas(msg.x, msg.y, msg.color, msg.size);
+            drawOnCanvas(msg.x, msg.y, msg.color, msg.size, msg.type);
         }
         else if (msg.hasOwnProperty('command') && (msg.command === 'clear')) {
             clearCanvas();
@@ -96,14 +92,30 @@ export default function Draw() {
 
     registerOnMessageCallback(onMessageReceived.bind(this));
     
-    function drawOnCanvas(x, y, color, size) {
+    function drawOnCanvas(x, y, color, size, type) {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
         ctx.fillStyle = color;
-        //ctx.fillRect(x, y-60, 3, 3); // Draw a 5x5 square at the mouse position
+        if (type === 'eraser') {
+            clearRound(ctx, x, y-55, size)
+        }
+        else if (type === 'round') {
+            ctx.beginPath();
+            ctx.arc(x, y-55, size, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+        else if (type === 'square') {
+            ctx.fillRect(x-size/2, y-penSize/2-55, size, size);
+        }
+    }
+
+    function clearRound(ctx, x, y, radius) {
+        ctx.save();
         ctx.beginPath();
-        ctx.arc(x, y-60, size, 0, 2 * Math.PI);
-        ctx.fill();
+        ctx.arc(x, y, radius, 0, 2 * Math.PI, false);
+        ctx.clip();
+        ctx.clearRect(x - radius - 1, y - radius - 1, radius * 2 + 2, radius * 2 + 2);
+        ctx.restore();
     }
     
     function handleClearCommand() {
@@ -120,28 +132,69 @@ export default function Draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
     
+    function saveCanvasToPng() {
+        const canvas = canvasRef.current;
+        const link = document.createElement('a');
+        link.download = 'canvas.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    }
+
+    function handleTouchStart(e) {
+        const touch = e.touches[0];
+        setCoords({
+            x: touch.clientX,
+            y: touch.clientY,
+        });
+    }
+    
+    function handleTouch(e) {
+        const touch = e.touches[0];
+        setCoords({
+            x: touch.clientX,
+            y: touch.clientY,
+        });
+        setMouseDown(true);
+        sendPixel();
+    }
+    
     return (
         <div>
             <div className={"container-mouse"} 
                  onMouseMove={handleWindowMouseMove} 
                  onMouseDown={handleMouseDown} 
                  onMouseUp={handleMouseUp}
-                 onTouchStart={handleMouseDown}
+                 onTouchStart={e => handleTouchStart(e)}
                  onTouchEnd={handleMouseUp}
-                 onTouchMove={handleWindowMouseMove}
+                 onTouchMove={e => handleTouch(e)}
             >
                 <canvas ref={canvasRef} width={canvasSize.x} height={canvasSize.y} 
                         style={{width: '100%', height: '100%'}}/>
             </div>
             <div className={"container-row"}>
                 <div className={"container-data"}>
-                    <input className={"tool-button"} type={"button"} value={"Clear"} onClick={() => {
-                        handleClearCommand()
-                    }}/>
-                    <input type={"color"} value={selectedColor} 
+                    <div className={"tool-button-container"}>
+                        <input className={"tool-button"} type={"button"} value={"Clear"} onClick={() => {
+                            handleClearCommand()
+                        }}/>
+                        <input className={"tool-button"} type={"button"} value={"Save"} onClick={() => {
+                            saveCanvasToPng()
+                        }}/>
+                    </div>
+                    <input type={"color"} value={selectedColor}
                            onChange={e => setSelectedColor(e.target.value)}/>
-                    <input type={"range"} min={1} max={50} value={penSize} 
-                           onChange={e => setPenSize(e.target.value)}/>
+                    <select value={penType} onChange={e => {
+                        setPenType(e.target.value);
+                    }}>
+                        <option value="round">Round</option>
+                        <option value="square">Square</option>
+                        <option value="eraser">Eraser</option>
+                    </select>
+                    <div>
+                        <input type={"range"} min={1} max={50} value={penSize}
+                               onChange={e => setPenSize(e.target.value)}/>
+                        Size: {penSize}
+                    </div>
                 </div>
             </div>
             <div className={"uuid-field"}>

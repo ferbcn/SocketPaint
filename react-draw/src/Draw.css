@@ -12,7 +12,7 @@
     flex-direction: row;
     justify-content: space-around;
     align-items: center;
-    background-color: #779096;
+    background-color: var(--bgColor);
     width: 100%;
     height: 50px;
     font-size: 14px;
@@ -26,6 +26,14 @@
     text-align: right;
     color: lightgray;
     border: none;
+}
+
+.tool-button-container{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--bgColor);
 }
 
 .tool-button {
