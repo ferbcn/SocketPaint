@@ -1,7 +1,7 @@
 import {useEffect, useState, useRef} from 'react';
 import './Draw.css';
 
-import {registerOnMessageCallback, send } from "./websocket";
+import {registerOnMessageCallback, send, startWebsocketConnection} from "./websocket";
 
 export default function Draw({ initColor="#EE1133" }) {
     const [canvasSize, setCanvasSize] = useState({x: null, y: null});
@@ -30,6 +30,7 @@ export default function Draw({ initColor="#EE1133" }) {
                 setUuid(data.uuid);
             });
         
+        startWebsocketConnection({endpoint: 'wschat', uuid: uuid})
         
         // function to handle window resize
         const handleResize = () => {

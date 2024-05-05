@@ -24,9 +24,9 @@ function App() {
                 <Routes>
                     <Route path="/" element={<Menu />} />
                     <Route path="/draw" element={
-                        <WebSocketManager endpoint="wschat">
-                            <Draw initColor={"#EE1133"} />
-                        </WebSocketManager>
+                        //<WebSocketManager endpoint="wschat">
+                            <Draw initColor={"#61dafb"} />
+                        //</WebSocketManager>
                     } />
                 </Routes>
             </div>
