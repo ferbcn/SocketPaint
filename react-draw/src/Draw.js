@@ -3,7 +3,7 @@ import './Draw.css';
 
 import {registerOnMessageCallback, send } from "./websocket";
 
-export default function Draw({ canvasColor="#FFFFFF", initColor="#EE1133" }) {
+export default function Draw({ initColor="#EE1133" }) {
     const [canvasSize, setCanvasSize] = useState({x: null, y: null});
     const [coords, setCoords] = useState({x: 0, y: 0});
     const [mouseDown, setMouseDown] = useState(false);
