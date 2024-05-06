@@ -128,4 +128,5 @@ nav ul li a:hover {
   align-items: center;
   justify-content: center;
   color: var(--accentColor);
+  font-size: 10px;
 }
