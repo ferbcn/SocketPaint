@@ -2,7 +2,7 @@
 using System.Net.WebSockets;
 using Microsoft.AspNetCore.Mvc;
 
-namespace WebApiReact;
+namespace CoDraw;
 
 public class WebSocketController : Controller
 {
@@ -23,9 +23,9 @@ public class WebSocketController : Controller
         if (HttpContext.WebSockets.IsWebSocketRequest)
         {
             using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-            _webSocketManager.AddSocket(webSocket); // Add the new WebSocket to the list.
+            _webSocketManager.AddSocket(webSocket, uuidString); // Add the new WebSocket to the list.
             Console.WriteLine("WebSocket connection established, current connections: " + _webSocketManager.GetAllSockets().Count);
-            await Echo(webSocket);
+            await Echo(webSocket, uuidString);
             _webSocketManager.RemoveSocket(webSocket); // Remove the WebSocket when it's done
         }
         else
@@ -34,7 +34,7 @@ public class WebSocketController : Controller
         }
     }
     
-    public async Task Echo(WebSocket webSocket)
+    public async Task Echo(WebSocket webSocket, String uuid)
     {
         var buffer = new byte[128];
         WebSocketReceiveResult receiveResult;
@@ -54,7 +54,7 @@ public class WebSocketController : Controller
                 continue;
             }
             
-            foreach (var socket in _webSocketManager.GetAllSockets())
+            foreach (var socket in _webSocketManager.GetAllSockets(uuid))
             {
                 if (socket.State == WebSocketState.Open)
                 {

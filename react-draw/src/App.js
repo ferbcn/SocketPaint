@@ -1,28 +1,25 @@
 import {React, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import './App.css';
 
 import Draw from './Draw';
 import Menu from "./Menu";
 
+import './App.css';
+
 function App() {
     const [uuid, setUuid] = useState(null);
     
-    function getUuid(){
+    useEffect(() => {
         // get uuid from /api/getuuid
         const host = process.env.NODE_ENV === 'production' ? window.location.host : 'localhost:8080';
         const protocol = window.location.protocol;
         fetch(`${protocol}//${host}/api/getuuid`)
             .then(response => response.json())
             .then(data => {
-                console.log(data);
+                //console.log(data);
                 setUuid(data.uuid);
-                console.log("uuid set to:", uuid);
+                //console.log("uuid set to:", uuid);
             });
-    }
-    
-    useEffect(() => {
-        getUuid();
     }, []);
     
     

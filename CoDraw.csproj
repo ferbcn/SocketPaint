@@ -43,13 +43,13 @@
       <None Include="wwwroot\logo192.png" />
       <None Include="wwwroot\logo512.png" />
       <None Include="wwwroot\robots.txt" />
-      <None Include="wwwroot\static\css\main.5c567e67.css" />
-      <None Include="wwwroot\static\css\main.5c567e67.css.map" />
+      <None Include="wwwroot\static\css\main.d0a98f84.css" />
+      <None Include="wwwroot\static\css\main.d0a98f84.css.map" />
       <None Include="wwwroot\static\js\453.f9d3e484.chunk.js" />
       <None Include="wwwroot\static\js\453.f9d3e484.chunk.js.map" />
-      <None Include="wwwroot\static\js\main.ffcf9da6.js" />
-      <None Include="wwwroot\static\js\main.ffcf9da6.js.LICENSE.txt" />
-      <None Include="wwwroot\static\js\main.ffcf9da6.js.map" />
+      <None Include="wwwroot\static\js\main.ad711a43.js" />
+      <None Include="wwwroot\static\js\main.ad711a43.js.LICENSE.txt" />
+      <None Include="wwwroot\static\js\main.ad711a43.js.map" />
       <None Include="wwwroot\static\media\logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg" />
     </ItemGroup>
 </Project>

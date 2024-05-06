@@ -2,8 +2,7 @@ import {useEffect, useState, useRef} from 'react';
 import './Draw.css';
 
 import {registerOnMessageCallback, send, startWebsocketConnection} from "./websocket";
-import { useParams, Link } from 'react-router-dom'
-import Tooltip from './Tooltip';
+import { useParams } from 'react-router-dom'
 
 import copyIcon from './media/copy-icon.png';
 import saveIcon from './media/save-icon.png';
@@ -24,16 +23,15 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
 
 
     useEffect(() => {
-        
+
         // prevent scrolling on touch devices
         document.body.addEventListener('touchmove', function(e) {
             e.preventDefault();
         }, {passive: false});
-        
-        // start websocket connection only when uuid has loaded
+
         startWebsocketConnection({endpoint: 'wschat', uuid: uuidParam});
-        
-        // function to handle window resize
+
+        // handle window resize
         const handleResize = () => {
             setCanvasSize({
                 x: window.innerWidth,
@@ -51,8 +49,8 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         return () => {
             window.removeEventListener('resize', handleResize);
         };
-        
-    }, []);
+
+    }, [uuidParam]); // Added uuidParam to the dependency array
 
     const handleMouseDown = event => {
         setMouseDown(true)
@@ -77,7 +75,8 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
             y: coords.y,
             color: selectedColor,
             size: penSize,
-            type: penType
+            type: penType,
+            uuid: uuidParam
         }
         send(JSON.stringify(msg))
     }
@@ -218,11 +217,11 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
                     <div className={"tool-button-container"}>
                         <button className={"tool-button"} type={"button"} onClick={() => {
                             handleClearCommand()}}>
-                            <img className={"small-icon"} src={clearIcon}></img> 
+                            <img className={"small-icon"} alt={"Clear canvas!"} src={clearIcon}></img> 
                         </button>
                         <button className={"tool-button"} type={"button"} value={"\u239A"} onClick={() => {
                             saveCanvasToPng()}}>
-                            <img className={"small-icon"} src={saveIcon}></img>
+                            <img className={"small-icon"} alt={"Save canvas"} src={saveIcon}></img>
                         </button>
                     </div>
                     <div className={"tool-item"}>

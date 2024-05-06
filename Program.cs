@@ -1,5 +1,5 @@
-using IWebSocketManager = WebApiReact.IWebSocketManager;
-using WebSocketManager = WebApiReact.WebSocketManager;
+using IWebSocketManager = CoDraw.IWebSocketManager;
+using WebSocketManager = CoDraw.WebSocketManager;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
