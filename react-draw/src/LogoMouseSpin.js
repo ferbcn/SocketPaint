@@ -1,14 +1,18 @@
-//import LogoRotate from './LogoRotate';
 import React, { useState } from 'react';
 import reactLogo from "./media/logo.svg";
 
-export default function LogoRotate() {
+export default function LogoMouseSpin() {
     
     const [prevX, setPrevX] = useState(null);
     const [rotation, setRotation] = useState(0);
+    const [mouseDown, setMouseDown] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(true);
 
     function handleDrag (e, imgPos) {
-        console.log(e.clientY, imgPos.y);
+        if (!mouseDown) {
+            setPrevX(null);
+            return;
+        }
         if (prevX !== null) {
             if (e.clientY > imgPos.y){
                 setRotation(rotation + prevX - e.clientX);
@@ -19,11 +23,24 @@ export default function LogoRotate() {
         }
         setPrevX(e.clientX);
     };
+    
+    function handleMouseDown () {
+        setMouseDown(true);
+        setIsPlaying(false);
+    }
+    
+    function handleMouseUp () {
+        setMouseDown(false);
+        setIsPlaying(true);
+    }
 
     return (
         <div>
             <img className={"App-logo"} src={reactLogo} alt={"logo"}
-                 style={{transform: `rotate(${rotation}deg)`}}
+                 style={{
+                     transform: `rotate(${rotation}deg)`,
+                     animation: isPlaying ? 'App-logo-spin infinite 20s linear' : 'none' // TODO: add velocity on button release
+                 }}
                  draggable="true"
                  onMouseMove={(e) => {
                      const position = e.target.getBoundingClientRect();
@@ -32,7 +49,11 @@ export default function LogoRotate() {
                          y: position.top + (position.top + position.bottom) / 2
                      });
                  }}
-                 onDragStart={e => e.preventDefault()}/>
+                 onDragStart={e => e.preventDefault()}
+                 onMouseDown={() => handleMouseDown()}
+                 onMouseUp={() => handleMouseUp()}
+                 onMouseLeave={() => handleMouseUp()}
+            />
         </div>
     )
 }

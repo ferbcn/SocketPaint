@@ -8,7 +8,7 @@ export const startWebsocketConnection = ({endpoint, uuid}) => {
   ws.onopen = () => {
     console.log(`ws connection [${endpoint}] opened `)
     if (uuid) {
-      send(JSON.stringify({uuid}))
+      send(JSON.stringify({uuid: uuid}))
     }
   }
 

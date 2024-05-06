@@ -2,8 +2,9 @@ import {useEffect, useState, useRef} from 'react';
 import './Draw.css';
 
 import {registerOnMessageCallback, send, startWebsocketConnection} from "./websocket";
+import { useParams } from 'react-router-dom'
 
-export default function Draw({ initColor="#EE1133" }) {
+export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     const [canvasSize, setCanvasSize] = useState({x: null, y: null});
     const [coords, setCoords] = useState({x: 0, y: 0});
     const [mouseDown, setMouseDown] = useState(false);
@@ -12,6 +13,9 @@ export default function Draw({ initColor="#EE1133" }) {
     const [penType, setPenType] = useState("round");
     const canvasRef = useRef(null);
     const [uuid, setUuid] = useState(null);
+    const [fillColor, setFillColor] = useState(bgColor);
+
+    const { uuidParam } = useParams()
     
     useEffect(() => {
         
@@ -61,7 +65,7 @@ export default function Draw({ initColor="#EE1133" }) {
         setMouseDown(false)
     };
     
-    const handleWindowMouseMove = event => {
+    const handleMouseMove = event => {
         setCoords({
             x: event.clientX,
             y: event.clientY,
@@ -83,11 +87,18 @@ export default function Draw({ initColor="#EE1133" }) {
     
     function onMessageReceived(msg) {
         msg = JSON.parse(msg);
-        if (msg.hasOwnProperty('color')) {
+        // Basic drawing
+        if (msg.hasOwnProperty('color') && msg.hasOwnProperty('size') && msg.hasOwnProperty('type')){
             drawOnCanvas(msg.x, msg.y, msg.color, msg.size, msg.type);
         }
-        else if (msg.hasOwnProperty('command') && (msg.command === 'clear')) {
-            clearCanvas();
+        // Special commands
+        else if (msg.hasOwnProperty('command')) {
+            if (msg.command === 'clear') {
+                clearCanvas();
+            }
+            else if (msg.command === 'fill') {
+                drawFillColor(msg.color);
+            }
         }
     }
 
@@ -95,7 +106,7 @@ export default function Draw({ initColor="#EE1133" }) {
     
     function drawOnCanvas(x, y, color, size, type) {
         const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', {alpha: true});
         ctx.fillStyle = color;
         if (type === 'eraser') {
             clearRound(ctx, x, y-55, size)
@@ -119,15 +130,7 @@ export default function Draw({ initColor="#EE1133" }) {
         ctx.restore();
     }
     
-    function handleClearCommand() {
-        const msg = {
-            command: "clear"
-        }
-        send(JSON.stringify(msg))
-    }
-    
     function clearCanvas() {
-        // clear locally
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -139,6 +142,24 @@ export default function Draw({ initColor="#EE1133" }) {
         link.download = 'canvas.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
+    }
+
+    function drawFillColor(color) {
+        setFillColor(color);
+        // fill the canvas with the new color
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        // set drawing style to opaque
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = color;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function handleClearCommand() {
+        const msg = {
+            command: "clear"
+        }
+        send(JSON.stringify(msg))
     }
 
     function handleTouchStart(e) {
@@ -158,11 +179,19 @@ export default function Draw({ initColor="#EE1133" }) {
         setMouseDown(true);
         sendPixel();
     }
+
+    function handleSelectedFillColor(fillColor){
+        const msg = {
+            command: "fill",
+            color: fillColor
+        }
+        send(JSON.stringify(msg))
+    }
     
     return (
         <div>
-            <div className={"container-mouse"} 
-                 onMouseMove={handleWindowMouseMove} 
+            <div className={"container-draw"}
+                 onMouseMove={handleMouseMove} 
                  onMouseDown={handleMouseDown} 
                  onMouseUp={handleMouseUp}
                  onMouseLeave={handleMouseUp}
@@ -183,24 +212,31 @@ export default function Draw({ initColor="#EE1133" }) {
                             saveCanvasToPng()
                         }}/>
                     </div>
-                    <input type={"color"} value={selectedColor}
-                           onChange={e => setSelectedColor(e.target.value)}/>
-                    <select value={penType} onChange={e => {
-                        setPenType(e.target.value);
-                    }}>
-                        <option value="round">Round</option>
-                        <option value="square">Square</option>
-                        <option value="eraser">Eraser</option>
-                    </select>
+                    <div className={"tool-item"}>
+                        Fill:
+                        <input type={"color"} value={fillColor} 
+                               onChange={e => handleSelectedFillColor(e.target.value)}/>
+                    </div>
+                    <div className={"tool-item"}>
+                        Pen: <input type={"color"} value={selectedColor}
+                                    onChange={e => setSelectedColor(e.target.value)}/>
+                        <select value={penType} onChange={e => {
+                            setPenType(e.target.value);
+                        }}>
+                            <option value="round">Round</option>
+                            <option value="square">Square</option>
+                            <option value="eraser">Eraser</option>
+                        </select>
+                    </div>
                     <div>
-                        <input type={"range"} min={1} max={50} value={penSize}
+                    <input type={"range"} min={1} max={50} value={penSize}
                                onChange={e => setPenSize(e.target.value)}/>
                         Size: {penSize}
                     </div>
                 </div>
             </div>
             <div className={"uuid-field"}>
-                Session ID: {uuid}
+                Session ID: {uuidParam || uuid}
             </div>
         </div>
     );

@@ -4,7 +4,6 @@ import './App.css';
 
 import Draw from './Draw';
 import Menu from "./Menu";
-import WebSocketManager from './WebSocketManager';
 
 function App() {
 
@@ -23,11 +22,8 @@ function App() {
                 </nav>
                 <Routes>
                     <Route path="/" element={<Menu />} />
-                    <Route path="/draw" element={
-                        //<WebSocketManager endpoint="wschat">
-                            <Draw initColor={"#61dafb"} />
-                        //</WebSocketManager>
-                    } />
+                    <Route path="/draw" element={<Draw initColor={"#61dafb"} bgColor={"#EEEEEE"}/>} />
+                    <Route path="/draw/:uuidParam" element={<Draw initColor={"#61dafb"} bgColor={"#EEEEEE"}/>} />
                 </Routes>
             </div>
         </Router>

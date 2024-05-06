@@ -1,4 +1,4 @@
-.container-mouse {
+.container-draw {
     height: calc(100vh - 120px); /* Adjust this value based on the height of your menu bar */
     font-size: 20px;
     cursor: pointer;
@@ -60,4 +60,10 @@
 
 .mousePos{
     width: 30vw;
+}
+
+input[type="color"] {
+    margin: 10px;
+    cursor: pointer;
+    border-color: var(--accentColor);
 }

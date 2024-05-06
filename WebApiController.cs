@@ -20,7 +20,7 @@ public class WebApiController : Controller
         Guid uuid = Guid.NewGuid();
         string uuidString = uuid.ToString();
         var resp = new { uuid = uuid };
-        Console.WriteLine("/api/getuuid: " + uuid);
+        Console.WriteLine("API request on /api/getuuid: " + uuid);
         return new JsonResult(resp);
     }
     
