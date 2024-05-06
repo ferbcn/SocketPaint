@@ -1,7 +1,7 @@
 import React from 'react';
 
-import saveIcon from './media/save-icon.png';
-import clearIcon from './media/clear-icon.png';
+import saveIcon from './media/floppy-disk.svg';
+import clearIcon from './media/trash-can.svg';
 import paintbrushIcon from './media/paintbrush.svg';
 import palette from './media/palette.svg';
 import bucket from './media/bucket.svg';
@@ -13,7 +13,7 @@ function Toolbar({ handleClearCommand, saveCanvasToPng, fillColor, handleSelecte
         <div>
             <div className={"container-row"}>
                 <div className={"container-data"}>
-                    <div className={"tool-button-container"}>
+                    <div className={"tool-item"}>
                         <button className={"tool-button"} type={"button"} onClick={handleClearCommand}>
                             <img className={"small-icon"} alt={"Clear canvas!"} src={clearIcon}></img>
                         </button>
@@ -39,7 +39,7 @@ function Toolbar({ handleClearCommand, saveCanvasToPng, fillColor, handleSelecte
                             <option value="eraser">Eraser</option>
                         </select>
                     </div>
-                    <div>
+                    <div className={"tool-item"}>
                         <input type={"range"} min={1} max={50} value={penSize}
                                onChange={e => setPenSize(e.target.value)}/>
                         <div className="input-size">Size: {penSize}</div>

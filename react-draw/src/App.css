@@ -81,19 +81,20 @@ nav {
   background-color: var(--bgColor);;
   height: 60px;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   padding: 0 0;
   box-shadow: 0 0 10px var(--accentColor);;
 }
 
-nav ul {
+ul {
   list-style-type: none;
   display: flex;
+  margin-left: -40px;
 }
 
 li {
-  margin-left: 20px;
+  margin-left: 3vw;
 }
 
 nav ul li a {
@@ -105,14 +106,6 @@ nav ul li a {
 
 nav ul li a:hover {
   color: var(--accentColor);
-}
-
-.draggable-text{
-  cursor: grab;
-  user-select: none;
-  font-size: 20px;
-  color: var(--accentColor);
-  margin: 10px;
 }
 
 .container-center{

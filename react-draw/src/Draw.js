@@ -5,7 +5,7 @@ import {registerOnMessageCallback, send, startWebsocketConnection} from "./webso
 import { useParams } from 'react-router-dom'
 
 import Toolbar from './Toolbar';
-import copyIcon from "./media/copy-icon.png";
+import copyIcon from "./media/share-nodes.svg";
 
 export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     const [canvasSize, setCanvasSize] = useState({x: null, y: null});
@@ -32,10 +32,26 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
 
         // handle window resize
         const handleResize = () => {
+            const canvas = canvasRef.current;
+            const ctx = canvas.getContext('2d');
+
+            // Save current image data
+            const imageData = canvas.toDataURL();
+
+            // Resize the canvas
             setCanvasSize({
                 x: window.innerWidth,
                 y: window.innerHeight - 120
             });
+
+            // Create a new image and set its source to the saved image data
+            const img = new Image();
+            img.src = imageData;
+
+            // When the image loads, draw it on the resized canvas
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0);
+            };
         };
 
         // call handleResize immediately to set initial size
@@ -229,15 +245,14 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
             />
             
             <div className={"link-container"}>
-                Session Link:
-                <button onClick={copyToClipboard}>
-                    <img className={"small-icon"} alt="" src={copyIcon}></img>
-                </button>
-                <div className={"copy-info-tag"}>
-                    {copySuccess ? <span>{copySuccess}</span> : null}
+                <div className={"link-text-container"}>
+                        {copySuccess ? <div className={"copy-info-tag"}>{copySuccess}</div> : <span>Copy Link:</span>}
                 </div>
+                    <button className={"tool-button"} onClick={copyToClipboard}>
+                        <img className={"small-icon"} alt="" src={copyIcon}></img>
+                    </button>
+                </div>
+
             </div>
-            
-        </div>
-    )
-}
+            )
+            }

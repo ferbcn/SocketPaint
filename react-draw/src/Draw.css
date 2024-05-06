@@ -23,16 +23,23 @@
     flex-direction: row;
     align-items: center;
     position: absolute;
-    top: 20px;
-    right: 50px;
+    top: 15px;
+    right: 10px;
     font-size: 12px;
     text-align: right;
     color: lightgray;
     border: none;
+    flex-wrap: wrap;
+}
+
+.link-text-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .copy-info-tag{
-    margin-left: 5px;
+    margin-right: 35px;
     color: var(--accentColor);
     font-size: 12px;
     width: 10px;
