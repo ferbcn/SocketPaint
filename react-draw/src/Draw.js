@@ -2,7 +2,12 @@ import {useEffect, useState, useRef} from 'react';
 import './Draw.css';
 
 import {registerOnMessageCallback, send, startWebsocketConnection} from "./websocket";
-import { useParams } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
+import Tooltip from './Tooltip';
+
+import copyIcon from './media/copy-icon.png';
+//import saveIcon from './media/save-icon.png';
+//import clearIcon from './media/clear-icon.png';
 
 export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     const [canvasSize, setCanvasSize] = useState({x: null, y: null});
@@ -12,11 +17,12 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     const [penSize, setPenSize] = useState(25);
     const [penType, setPenType] = useState("round");
     const canvasRef = useRef(null);
-    const [uuid, setUuid] = useState(null);
     const [fillColor, setFillColor] = useState(bgColor);
 
     const { uuidParam } = useParams()
-    
+    const [copySuccess, setCopySuccess] = useState('');
+
+
     useEffect(() => {
         
         // prevent scrolling on touch devices
@@ -24,17 +30,8 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
             e.preventDefault();
         }, {passive: false});
         
-        // get uuid from /api/getuuid
-        const host = process.env.NODE_ENV === 'production' ? window.location.host : 'localhost:8080';
-        const protocol = window.location.protocol;
-        fetch(`${protocol}//${host}/api/getuuid`)
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                setUuid(data.uuid);
-            });
-        
-        startWebsocketConnection({endpoint: 'wschat', uuid: uuid})
+        // start websocket connection only when uuid has loaded
+        startWebsocketConnection({endpoint: 'wschat', uuid: uuidParam});
         
         // function to handle window resize
         const handleResize = () => {
@@ -187,7 +184,21 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         }
         send(JSON.stringify(msg))
     }
-    
+
+    function copyToClipboard() {
+        // get host address from window.location
+        const host = process.env.NODE_ENV === 'production' ? window.location.host : 'localhost:3000';
+        const fullUrl = `${window.location.protocol}//${host}/draw/${uuidParam}`;
+        navigator.clipboard.writeText(fullUrl)
+            .then(() => {
+                setCopySuccess('Copied!');
+                setTimeout(() => setCopySuccess(null), 2000); // remove the message after 2 seconds
+            })
+            .catch(err => {
+                setCopySuccess('Failed to copy!');
+            });
+    }
+
     return (
         <div>
             <div className={"container-draw"}
@@ -205,10 +216,10 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
             <div className={"container-row"}>
                 <div className={"container-data"}>
                     <div className={"tool-button-container"}>
-                        <input className={"tool-button"} type={"button"} value={"Clear"} onClick={() => {
+                        <input className={"tool-button"} type={"button"} value={"\u2940"} onClick={() => {
                             handleClearCommand()
                         }}/>
-                        <input className={"tool-button"} type={"button"} value={"Save"} onClick={() => {
+                        <input className={"tool-button"} type={"button"} value={"\u239A"} onClick={() => {
                             saveCanvasToPng()
                         }}/>
                     </div>
@@ -236,7 +247,13 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
                 </div>
             </div>
             <div className={"uuid-field"}>
-                Session ID: {uuidParam || uuid}
+                Session ID: <Link to={`../draw/${uuidParam}`}>{uuidParam}</Link>
+                <button onClick={copyToClipboard}>
+                    <img className={"small-icon"} alt="" src={copyIcon}></img>
+                </button>
+                <div className="info-tag">
+                    {copySuccess}
+                </div>
             </div>
         </div>
     );

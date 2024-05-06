@@ -67,3 +67,42 @@ input[type="color"] {
     cursor: pointer;
     border-color: var(--accentColor);
 }
+
+.small-icon{
+    width: 10px;
+    height: 10px;
+    margin: 5px;
+}
+
+button{
+    background-color: darkgrey;
+    color: var(--accentColor);
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+button:hover{
+    background-color: var(--accentColor);
+    color: var(--bgColor);
+}
+
+.info-tag{
+    color: var(--accentColor);
+    font-size: 12px;
+}
+
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+.info-tag {
+    animation-name: fadeOut;
+    animation-duration: 2s;
+    animation-delay: 2s;
+    animation-fill-mode: forwards;
+}
+

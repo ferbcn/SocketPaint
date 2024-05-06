@@ -1,9 +1,10 @@
 export let send
 
 export const startWebsocketConnection = ({endpoint, uuid}) => {
+  console.log(`Starting WebsocketConnection: ${endpoint}, ${uuid} ...`)
   const host = process.env.NODE_ENV === 'production' ? window.location.host : 'localhost:8080'
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const ws = new window.WebSocket(`${protocol}//${host}/${endpoint}`) || {}
+  const ws = new window.WebSocket(`${protocol}//${host}/${endpoint}?uuid=${uuid}`) || {}
   
   ws.onopen = () => {
     console.log(`ws connection [${endpoint}] opened `)

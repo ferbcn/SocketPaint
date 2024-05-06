@@ -16,6 +16,10 @@ public class WebSocketController : Controller
     [HttpGet("/wschat")]
     public async Task Get()
     {
+        // read uuid from url
+        var uuidString = HttpContext.Request.Query["uuid"];
+        Console.WriteLine("Opening websocket for UUID: " + uuidString);
+
         if (HttpContext.WebSockets.IsWebSocketRequest)
         {
             using var webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
