@@ -19,7 +19,7 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
 
     const { uuidParam } = useParams()
     const [copySuccess, setCopySuccess] = useState('');
-
+    const [roundTripTime, setRoundTripTime] = useState(0);
 
     useEffect(() => {
 
@@ -29,7 +29,7 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         }, {passive: false});
 
         startWebsocketConnection({endpoint: 'wschat', uuid: uuidParam});
-
+        
         // handle window resize
         const handleResize = () => {
             const canvas = canvasRef.current;
@@ -59,6 +59,9 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
 
         // set up event listener for window resize
         window.addEventListener('resize', handleResize);
+
+        // Start the interval
+        const rttInterval = setInterval(sendRTTCommand, 10000); // 10000 milliseconds = 10 seconds
 
         // clean up event listener on unmount
         return () => {
@@ -96,6 +99,14 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         send(JSON.stringify(msg))
     }
     
+    function sendRTTCommand() {
+        const msg = {
+            command: "rtt",
+            time: Date.now()
+        }
+        send(JSON.stringify(msg))
+    }
+    
     function onMessageReceived(msg) {
         msg = JSON.parse(msg);
         // Basic drawing
@@ -106,6 +117,10 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         else if (msg.hasOwnProperty('command')) {
             if (msg.command === 'clear') {
                 clearCanvas();
+            }
+            if (msg.command === 'rtt') {
+                let rtt = 0 + Date.now() - msg.time;
+                setRoundTripTime(rtt);
             }
             else if (msg.command === 'fill') {
                 drawFillColor(msg.color);
@@ -243,6 +258,10 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
                 copyToClipboard={copyToClipboard}
                 copySuccess={copySuccess}
             />
+
+            <div className={"time-container"}>
+                {roundTripTime ? <div>RTT: {roundTripTime} ms</div> : null}
+            </div>
             
             <div className={"link-container"}>
                 <div className={"link-text-container"}>

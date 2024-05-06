@@ -27,17 +27,21 @@ function Toolbar({ handleClearCommand, saveCanvasToPng, fillColor, handleSelecte
                                onChange={e => handleSelectedFillColor(e.target.value)}/>
                     </div>
                     <div className={"tool-item"}>
-                    <img alt="" src={palette} className={"icon-white"}/>
-                        <input type={"color"} value={selectedColor}
-                               onChange={e => setSelectedColor(e.target.value)}/>
-                        <img alt="" src={paintbrushIcon} className={"icon-white"}/>
-                        <select value={penType} onChange={e => {
-                            setPenType(e.target.value);
-                        }}>
-                            <option value="round">Round</option>
-                            <option value="square">Square</option>
-                            <option value="eraser">Eraser</option>
-                        </select>
+                        <span>
+                            <img alt="" src={palette} className={"icon-white"}/>
+                            <input type={"color"} value={selectedColor}
+                                   onChange={e => setSelectedColor(e.target.value)}/>
+                        </span>
+                        <span>
+                            <img alt="" src={paintbrushIcon} className={"icon-white"}/>
+                            <select value={penType} onChange={e => {
+                                setPenType(e.target.value);
+                                }}>
+                                <option value="round">Round</option>
+                                <option value="square">Square</option>
+                                <option value="eraser">Eraser</option>
+                            </select>
+                        </span>
                     </div>
                     <div className={"tool-item"}>
                         <input type={"range"} min={1} max={50} value={penSize}

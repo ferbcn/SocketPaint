@@ -32,6 +32,20 @@
     flex-wrap: wrap;
 }
 
+.time-container{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    position: absolute;
+    top: 25px;
+    right: 150px;
+    font-size: 10px;
+    text-align: right;
+    color: lightgray;
+    border: none;
+    flex-wrap: wrap;
+}
+
 .link-text-container{
     display: flex;
     flex-direction: column;
