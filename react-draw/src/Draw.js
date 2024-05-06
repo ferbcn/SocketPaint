@@ -6,8 +6,8 @@ import { useParams, Link } from 'react-router-dom'
 import Tooltip from './Tooltip';
 
 import copyIcon from './media/copy-icon.png';
-//import saveIcon from './media/save-icon.png';
-//import clearIcon from './media/clear-icon.png';
+import saveIcon from './media/save-icon.png';
+import clearIcon from './media/clear-icon.png';
 
 export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     const [canvasSize, setCanvasSize] = useState({x: null, y: null});
@@ -216,12 +216,14 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
             <div className={"container-row"}>
                 <div className={"container-data"}>
                     <div className={"tool-button-container"}>
-                        <input className={"tool-button"} type={"button"} value={"\u2940"} onClick={() => {
-                            handleClearCommand()
-                        }}/>
-                        <input className={"tool-button"} type={"button"} value={"\u239A"} onClick={() => {
-                            saveCanvasToPng()
-                        }}/>
+                        <button className={"tool-button"} type={"button"} onClick={() => {
+                            handleClearCommand()}}>
+                            <img className={"small-icon"} src={clearIcon}></img> 
+                        </button>
+                        <button className={"tool-button"} type={"button"} value={"\u239A"} onClick={() => {
+                            saveCanvasToPng()}}>
+                            <img className={"small-icon"} src={saveIcon}></img>
+                        </button>
                     </div>
                     <div className={"tool-item"}>
                         Fill:
@@ -246,13 +248,13 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
                     </div>
                 </div>
             </div>
-            <div className={"uuid-field"}>
-                Session ID: <Link to={`../draw/${uuidParam}`}>{uuidParam}</Link>
+            <div className={"link-container"}>
+                Copy Session Link: 
                 <button onClick={copyToClipboard}>
                     <img className={"small-icon"} alt="" src={copyIcon}></img>
                 </button>
-                <div className="info-tag">
-                    {copySuccess}
+                <div className={"info-tag"}>
+                    {copySuccess ? <span>{copySuccess}</span> : null}
                 </div>
             </div>
         </div>
