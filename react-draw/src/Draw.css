@@ -99,4 +99,14 @@ button:hover{
     width: 30px;
 }
 
+.tool-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    margin: 5px;
+    padding: 5px;
+}
 
