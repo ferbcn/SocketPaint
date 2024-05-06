@@ -26,6 +26,15 @@
     font-weight: bold;
 }
 
+@media (max-width: 768px) {
+    .menu-button {
+        height: 5vh; /* Increase the height */
+        width: 150px; /* Increase the width */
+        margin: 15px; /* Add more margin */
+        font-size: 1.2em; /* Increase font size */
+    }
+}
+
 .menu-button:hover {
     background: var(--accentColor);
     color: black;

@@ -9,7 +9,7 @@
 .tool-button {
     color: var(--bgColor);
     align-items: center;
-    height: 3vh;
+    height: 30px;
     background: white;
     border: none;
     text-align: center;
@@ -29,9 +29,15 @@
 }
 
 input[type="color"] {
-    margin: 10px;
+    -webkit-appearance: none;
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 50%;
     cursor: pointer;
-    border-color: var(--accentColor);
+    background: transparent;
+    position: relative;
+    padding: 0;
 }
 
 .small-icon{
@@ -55,13 +61,6 @@ button:hover{
     color: var(--bgColor);
 }
 
-.info-tag{
-    margin-left: 5px;
-    color: var(--accentColor);
-    font-size: 12px;
-    width: 30px;
-}
-
 .tool-item {
     display: flex;
     flex-direction: row;
@@ -77,4 +76,43 @@ button:hover{
     width: 15px;
     height: 15px;
     margin: 5px;
+}
+
+select{
+    position: relative;
+    height: 40px;
+    background: var(--bgColor);
+    border-radius: 20px;
+    padding: 10px;
+    overflow: hidden;
+    color: white;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 15px;
+    border-radius: 5px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: var(--accentColor);
+    cursor: pointer;
+}
+
+.input-size{
+    width: 100%;
+    display: flex;  
+    flex-direction: row;
+    justify-content: flex-end;
 }

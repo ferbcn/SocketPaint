@@ -30,3 +30,10 @@
     color: lightgray;
     border: none;
 }
+
+.copy-info-tag{
+    margin-left: 5px;
+    color: var(--accentColor);
+    font-size: 12px;
+    width: 10px;
+}

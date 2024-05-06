@@ -43,13 +43,16 @@
       <None Include="wwwroot\logo192.png" />
       <None Include="wwwroot\logo512.png" />
       <None Include="wwwroot\robots.txt" />
-      <None Include="wwwroot\static\css\main.d0a98f84.css" />
-      <None Include="wwwroot\static\css\main.d0a98f84.css.map" />
+      <None Include="wwwroot\static\css\main.f9374c76.css" />
+      <None Include="wwwroot\static\css\main.f9374c76.css.map" />
       <None Include="wwwroot\static\js\453.f9d3e484.chunk.js" />
       <None Include="wwwroot\static\js\453.f9d3e484.chunk.js.map" />
-      <None Include="wwwroot\static\js\main.ad711a43.js" />
-      <None Include="wwwroot\static\js\main.ad711a43.js.LICENSE.txt" />
-      <None Include="wwwroot\static\js\main.ad711a43.js.map" />
+      <None Include="wwwroot\static\js\main.b0ad6b9f.js" />
+      <None Include="wwwroot\static\js\main.b0ad6b9f.js.LICENSE.txt" />
+      <None Include="wwwroot\static\js\main.b0ad6b9f.js.map" />
+      <None Include="wwwroot\static\media\bucket.a243f1cdbb26e39eeba9e94d38515951.svg" />
       <None Include="wwwroot\static\media\logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg" />
+      <None Include="wwwroot\static\media\paintbrush.6e75a15a3c625e443e01f2cc760213bd.svg" />
+      <None Include="wwwroot\static\media\palette.2035d45a6625490013397a3f0345e354.svg" />
     </ItemGroup>
 </Project>

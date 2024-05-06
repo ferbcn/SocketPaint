@@ -1,13 +1,14 @@
 import React from 'react';
 
-import copyIcon from './media/copy-icon.png';
 import saveIcon from './media/save-icon.png';
 import clearIcon from './media/clear-icon.png';
-import brushIcon from './media/brush.svg';
+import paintbrushIcon from './media/paintbrush.svg';
+import palette from './media/palette.svg';
+import bucket from './media/bucket.svg';
 
 import './Toolbar.css';
 
-function Toolbar({ handleClearCommand, saveCanvasToPng, fillColor, handleSelectedFillColor, selectedColor, setSelectedColor, penType, setPenType, penSize, setPenSize, copyToClipboard, copySuccess }) {
+function Toolbar({ handleClearCommand, saveCanvasToPng, fillColor, handleSelectedFillColor, selectedColor, setSelectedColor, penType, setPenType, penSize, setPenSize }) {
     return (
         <div>
             <div className={"container-row"}>
@@ -21,14 +22,15 @@ function Toolbar({ handleClearCommand, saveCanvasToPng, fillColor, handleSelecte
                         </button>
                     </div>
                     <div className={"tool-item"}>
-                        Fill:
+                        <img alt="" src={bucket} className={"icon-white"}/>
                         <input type={"color"} value={fillColor}
                                onChange={e => handleSelectedFillColor(e.target.value)}/>
                     </div>
                     <div className={"tool-item"}>
-                        <img alt="" src={brushIcon} className={"icon-white"}/>
+                    <img alt="" src={palette} className={"icon-white"}/>
                         <input type={"color"} value={selectedColor}
                                onChange={e => setSelectedColor(e.target.value)}/>
+                        <img alt="" src={paintbrushIcon} className={"icon-white"}/>
                         <select value={penType} onChange={e => {
                             setPenType(e.target.value);
                         }}>
@@ -40,17 +42,8 @@ function Toolbar({ handleClearCommand, saveCanvasToPng, fillColor, handleSelecte
                     <div>
                         <input type={"range"} min={1} max={50} value={penSize}
                                onChange={e => setPenSize(e.target.value)}/>
-                        Size: {penSize}
+                        <div className="input-size">Size: {penSize}</div>
                     </div>
-                </div>
-            </div>
-            <div className={"link-container"}>
-                Copy Session Link:
-                <button onClick={copyToClipboard}>
-                    <img className={"small-icon"} alt="" src={copyIcon}></img>
-                </button>
-                <div className={"info-tag"}>
-                    {copySuccess ? <span>{copySuccess}</span> : null}
                 </div>
             </div>
         </div>

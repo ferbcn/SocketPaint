@@ -1,10 +1,11 @@
-import {useEffect, useState, useRef} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import './Draw.css';
 
 import {registerOnMessageCallback, send, startWebsocketConnection} from "./websocket";
 import { useParams } from 'react-router-dom'
 
 import Toolbar from './Toolbar';
+import copyIcon from "./media/copy-icon.png";
 
 export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     const [canvasSize, setCanvasSize] = useState({x: null, y: null});
@@ -199,18 +200,19 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     return (
         <div>
             <div className={"container-draw"}
-                 onMouseMove={handleMouseMove} 
-                 onMouseDown={handleMouseDown} 
+                 onMouseMove={handleMouseMove}
+                 onMouseDown={handleMouseDown}
                  onMouseUp={handleMouseUp}
                  onMouseLeave={handleMouseUp}
                  onTouchStart={e => handleTouchStart(e)}
                  onTouchEnd={handleMouseUp}
                  onTouchMove={e => handleTouch(e)}>
-                
-                <canvas ref={canvasRef} width={canvasSize.x} height={canvasSize.y} style={{width: '100%', height: '100%'}}/>
-                
+
+                <canvas ref={canvasRef} width={canvasSize.x} height={canvasSize.y}
+                        style={{width: '100%', height: '100%'}}/>
+
             </div>
-            
+
             <Toolbar
                 handleClearCommand={handleClearCommand}
                 saveCanvasToPng={saveCanvasToPng}
@@ -225,6 +227,17 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
                 copyToClipboard={copyToClipboard}
                 copySuccess={copySuccess}
             />
+            
+            <div className={"link-container"}>
+                Session Link:
+                <button onClick={copyToClipboard}>
+                    <img className={"small-icon"} alt="" src={copyIcon}></img>
+                </button>
+                <div className={"copy-info-tag"}>
+                    {copySuccess ? <span>{copySuccess}</span> : null}
+                </div>
+            </div>
+            
         </div>
-    );
+    )
 }
