@@ -1,0 +1,80 @@
+.tool-button-container{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--bgColor);
+}
+
+.tool-button {
+    color: var(--bgColor);
+    align-items: center;
+    height: 3vh;
+    background: white;
+    border: none;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    transition-duration: 0.4s;
+    cursor: pointer;
+    box-shadow: 0 0 5px var(--accentColor);
+    width: 5vw;
+    min-width: 50px;
+    font-weight: bold;
+}
+
+.tool-button:hover {
+    background: var(--accentColor);
+    color: black;
+}
+
+input[type="color"] {
+    margin: 10px;
+    cursor: pointer;
+    border-color: var(--accentColor);
+}
+
+.small-icon{
+    width: 15px;
+    height: 15px;
+    margin: 5px;
+}
+
+button{
+    background-color: rgba(252, 252, 252, 0.88);
+    color: var(--accentColor);
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+button:hover{
+    background-color: var(--accentColor);
+    color: var(--bgColor);
+}
+
+.info-tag{
+    margin-left: 5px;
+    color: var(--accentColor);
+    font-size: 12px;
+    width: 30px;
+}
+
+.tool-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    margin: 5px;
+    padding: 5px;
+}
+
+.icon-white{
+    width: 15px;
+    height: 15px;
+    margin: 5px;
+}

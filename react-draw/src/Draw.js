@@ -4,9 +4,7 @@ import './Draw.css';
 import {registerOnMessageCallback, send, startWebsocketConnection} from "./websocket";
 import { useParams } from 'react-router-dom'
 
-import copyIcon from './media/copy-icon.png';
-import saveIcon from './media/save-icon.png';
-import clearIcon from './media/clear-icon.png';
+import Toolbar from './Toolbar';
 
 export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     const [canvasSize, setCanvasSize] = useState({x: null, y: null});
@@ -207,55 +205,26 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
                  onMouseLeave={handleMouseUp}
                  onTouchStart={e => handleTouchStart(e)}
                  onTouchEnd={handleMouseUp}
-                 onTouchMove={e => handleTouch(e)}
-            >
-                <canvas ref={canvasRef} width={canvasSize.x} height={canvasSize.y} 
-                        style={{width: '100%', height: '100%'}}/>
+                 onTouchMove={e => handleTouch(e)}>
+                
+                <canvas ref={canvasRef} width={canvasSize.x} height={canvasSize.y} style={{width: '100%', height: '100%'}}/>
+                
             </div>
-            <div className={"container-row"}>
-                <div className={"container-data"}>
-                    <div className={"tool-button-container"}>
-                        <button className={"tool-button"} type={"button"} onClick={() => {
-                            handleClearCommand()}}>
-                            <img className={"small-icon"} alt={"Clear canvas!"} src={clearIcon}></img> 
-                        </button>
-                        <button className={"tool-button"} type={"button"} value={"\u239A"} onClick={() => {
-                            saveCanvasToPng()}}>
-                            <img className={"small-icon"} alt={"Save canvas"} src={saveIcon}></img>
-                        </button>
-                    </div>
-                    <div className={"tool-item"}>
-                        Fill:
-                        <input type={"color"} value={fillColor} 
-                               onChange={e => handleSelectedFillColor(e.target.value)}/>
-                    </div>
-                    <div className={"tool-item"}>
-                        Pen: <input type={"color"} value={selectedColor}
-                                    onChange={e => setSelectedColor(e.target.value)}/>
-                        <select value={penType} onChange={e => {
-                            setPenType(e.target.value);
-                        }}>
-                            <option value="round">Round</option>
-                            <option value="square">Square</option>
-                            <option value="eraser">Eraser</option>
-                        </select>
-                    </div>
-                    <div>
-                    <input type={"range"} min={1} max={50} value={penSize}
-                               onChange={e => setPenSize(e.target.value)}/>
-                        Size: {penSize}
-                    </div>
-                </div>
-            </div>
-            <div className={"link-container"}>
-                Copy Session Link: 
-                <button onClick={copyToClipboard}>
-                    <img className={"small-icon"} alt="" src={copyIcon}></img>
-                </button>
-                <div className={"info-tag"}>
-                    {copySuccess ? <span>{copySuccess}</span> : null}
-                </div>
-            </div>
+            
+            <Toolbar
+                handleClearCommand={handleClearCommand}
+                saveCanvasToPng={saveCanvasToPng}
+                fillColor={fillColor}
+                handleSelectedFillColor={handleSelectedFillColor}
+                selectedColor={selectedColor}
+                setSelectedColor={setSelectedColor}
+                penType={penType}
+                setPenType={setPenType}
+                penSize={penSize}
+                setPenSize={setPenSize}
+                copyToClipboard={copyToClipboard}
+                copySuccess={copySuccess}
+            />
         </div>
     );
 }
