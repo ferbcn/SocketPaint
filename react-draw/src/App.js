@@ -19,6 +19,10 @@ function App() {
                 //console.log(data);
                 setUuid(data.uuid);
                 //console.log("uuid set to:", uuid);
+            })
+            .catch(error => {
+                console.error('There has been a problem with your fetch operation:', error);
+                setUuid("API Error");
             });
     }, []);
     
