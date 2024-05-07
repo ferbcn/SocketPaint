@@ -8,6 +8,7 @@ import LogoSpinner from "./LogoSpinner";
 import './App.css';
 import refreshLogo from './media/repeat.svg';
 import Footer from "./Footer";
+import Physics from "./Physics";
 
 function App() {
     const [uuid, setUuid] = useState(null);
@@ -44,12 +45,16 @@ function App() {
                         <li>
                             {uuid ? <Link to={`/draw/${uuid}`}>Draw</Link> : null}
                         </li>
+                        <li>
+                            <Link to={"/physics"}>Physics</Link>
+                        </li>
                     </ul>
                 </nav>
                 <Routes>
-                    <Route path="/" element={uuid ? <Menu buttonLink={`/draw/${uuid}`} uuid={uuid}/> : null}/>
+                    <Route path="/" element={uuid ? <Menu buttonLink={`/draw/${uuid}`} uuid={uuid} getNewUuid={getNewUuid}/> : null}/>
                     <Route path="/" element={<Footer uuid={uuid} getNewUuid={getNewUuid}/> }/>
                     <Route path="/draw/:uuidParam" element={<Draw initColor={"#61dafb"} bgColor={"#EEEEEE"}/>}/>
+                    <Route path="/physics" element={<Physics initColor={"#61dafb"} bgColor={"#EEEEEE"}/>}/>
                 </Routes>
                 {uuid ? null : <LogoSpinner />}
                 
