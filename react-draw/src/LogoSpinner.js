@@ -32,13 +32,17 @@ export default function LogoSpinner() {
             else {
                 setRotation(rotation + e.clientX - prevX);
             }
+            if (mouseDown) {
+                setRotationTimeInCssStyle();
+            }
         }
         setPrevX(e.clientX);
-    };
+    }
     
     function handleMouseDown () {
-        setMouseDown(true);
+        setVelocity(0);
         setIsPlaying(false);
+        setMouseDown(true);
         setRotationTimeInCssStyle();
     }
     
