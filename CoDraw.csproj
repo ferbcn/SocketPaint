@@ -29,33 +29,34 @@
       <Content Update="wwwroot\build\manifest.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
-      <Content Update="wwwroot\asset-manifest.json">
+      <Content Update="wwwroot\build\asset-manifest.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
-      <Content Update="wwwroot\manifest.json">
+      <Content Update="wwwroot\build\manifest.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
     </ItemGroup>
 
     <ItemGroup>
-      <None Include="wwwroot\favicon.ico" />
-      <None Include="wwwroot\index.html" />
-      <None Include="wwwroot\logo192.png" />
-      <None Include="wwwroot\logo512.png" />
-      <None Include="wwwroot\robots.txt" />
-      <None Include="wwwroot\static\css\main.0a51a877.css" />
-      <None Include="wwwroot\static\css\main.0a51a877.css.map" />
-      <None Include="wwwroot\static\js\453.f9d3e484.chunk.js" />
-      <None Include="wwwroot\static\js\453.f9d3e484.chunk.js.map" />
-      <None Include="wwwroot\static\js\main.04a7b3c4.js" />
-      <None Include="wwwroot\static\js\main.04a7b3c4.js.LICENSE.txt" />
-      <None Include="wwwroot\static\js\main.04a7b3c4.js.map" />
-      <None Include="wwwroot\static\media\bucket.a243f1cdbb26e39eeba9e94d38515951.svg" />
-      <None Include="wwwroot\static\media\floppy-disk.61a16af3b883b2f758e88749161ffa47.svg" />
-      <None Include="wwwroot\static\media\logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg" />
-      <None Include="wwwroot\static\media\paintbrush.6e75a15a3c625e443e01f2cc760213bd.svg" />
-      <None Include="wwwroot\static\media\palette.2035d45a6625490013397a3f0345e354.svg" />
-      <None Include="wwwroot\static\media\share-nodes.98fd1d287bd9370fe4b9ef930ce093c6.svg" />
-      <None Include="wwwroot\static\media\trash-can.5c606ba144ffb01a9b17d740b5aa56ce.svg" />
+      <None Include="wwwroot\build\favicon.ico" />
+      <None Include="wwwroot\build\index.html" />
+      <None Include="wwwroot\build\logo192.png" />
+      <None Include="wwwroot\build\logo512.png" />
+      <None Include="wwwroot\build\robots.txt" />
+      <None Include="wwwroot\build\static\css\main.92e81615.css" />
+      <None Include="wwwroot\build\static\css\main.92e81615.css.map" />
+      <None Include="wwwroot\build\static\js\453.f9d3e484.chunk.js" />
+      <None Include="wwwroot\build\static\js\453.f9d3e484.chunk.js.map" />
+      <None Include="wwwroot\build\static\js\main.28f150f5.js" />
+      <None Include="wwwroot\build\static\js\main.28f150f5.js.LICENSE.txt" />
+      <None Include="wwwroot\build\static\js\main.28f150f5.js.map" />
+      <None Include="wwwroot\build\static\media\bucket.a243f1cdbb26e39eeba9e94d38515951.svg" />
+      <None Include="wwwroot\build\static\media\floppy-disk.61a16af3b883b2f758e88749161ffa47.svg" />
+      <None Include="wwwroot\build\static\media\logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg" />
+      <None Include="wwwroot\build\static\media\paintbrush.6e75a15a3c625e443e01f2cc760213bd.svg" />
+      <None Include="wwwroot\build\static\media\palette.2035d45a6625490013397a3f0345e354.svg" />
+      <None Include="wwwroot\build\static\media\repeat.81343e8d5566a0352c4031cd7f628b99.svg" />
+      <None Include="wwwroot\build\static\media\share-nodes.98fd1d287bd9370fe4b9ef930ce093c6.svg" />
+      <None Include="wwwroot\build\static\media\trash-can.5c606ba144ffb01a9b17d740b5aa56ce.svg" />
     </ItemGroup>
 </Project>

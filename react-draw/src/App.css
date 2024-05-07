@@ -113,3 +113,15 @@ nav ul li a:hover {
   color: var(--accentColor);
   font-size: 10px;
 }
+
+.icon-reload{
+  width: 15px;
+  height: 15px;
+  margin-left: 10px;
+  filter: invert(80%);
+  cursor: pointer;
+}
+
+.icon-reload:hover{
+  filter: invert(100%);
+}

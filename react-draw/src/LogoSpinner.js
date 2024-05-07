@@ -12,10 +12,6 @@ export default function LogoSpinner() {
     const [cssStyle, setCssStyle] = useState('App-logo-spin infinite 20s linear');
     const [velocity, setVelocity] = useState(5);
     
-    function randomInt(min, max) {
-        return Math.floor(Math.random() * (max - min + 1) + min);
-    }
-    
     function setRotationTimeInCssStyle() {
         const rotTime = 30 / velocity;
         setCssStyle(`App-logo-spin infinite ${rotTime}s linear`);
@@ -52,7 +48,7 @@ export default function LogoSpinner() {
     }
 
     return (
-        <div>
+        <div className={"container-row"}>
             <img className={"App-logo"} src={reactLogo} alt={"logo"}
                  style={{
                      transform: `rotate(${rotation}deg)`,

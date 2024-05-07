@@ -3,13 +3,15 @@ import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 
 import Draw from './Draw';
 import Menu from "./Menu";
+import LogoSpinner from "./LogoSpinner";
 
 import './App.css';
+import refreshLogo from './media/repeat.svg';
 
 function App() {
     const [uuid, setUuid] = useState(null);
     
-    useEffect(() => {
+    function getNewUuid() {
         // get uuid from /api/getuuid
         const host = process.env.NODE_ENV === 'production' ? window.location.host : 'localhost:8080';
         const protocol = window.location.protocol;
@@ -22,10 +24,13 @@ function App() {
             })
             .catch(error => {
                 console.error('There has been a problem with your fetch operation:', error);
-                setUuid("API Error");
             });
-    }, []);
+    }
     
+    useEffect(() => {
+        getNewUuid();
+    }, []);
+
     
     return (
         <Router>
@@ -33,7 +38,7 @@ function App() {
                 <nav>
                     <ul>
                         <li>
-                            <Link to="/">Home</Link>
+                            <Link to="/">Start</Link>
                         </li>
                         <li>
                             {uuid ? <Link to={`/draw/${uuid}`}>Draw</Link> : null}
@@ -41,13 +46,18 @@ function App() {
                     </ul>
                 </nav>
                 <Routes>
-                    <Route path="/" element={<Menu buttonLink={`/draw/${uuid}`}/>} />
-                    <Route path="/draw" element={<Draw initColor={"#61dafb"} bgColor={"#EEEEEE"}/>} />
-                    <Route path="/draw/:uuidParam" element={<Draw initColor={"#61dafb"} bgColor={"#EEEEEE"}/>} />
+                    <Route path="/" element={uuid ? <Menu buttonLink={`/draw/${uuid}`}/> : null}/>
+                    <Route path="/draw/:uuidParam" element={<Draw initColor={"#61dafb"} bgColor={"#EEEEEE"}/>}/>
                 </Routes>
                 <div className="uuidFooter">
-                    <p>Session ID: {uuid}</p>
+                    <p>
+                        Session ID: {uuid || "API Error!"} 
+                        <img className={"icon-reload"} alt="refresh" src={refreshLogo} onClick={getNewUuid}/>
+                    </p>
                 </div>
+
+                {uuid ? null : <LogoSpinner />}
+                
             </div>
         </Router>
     );
