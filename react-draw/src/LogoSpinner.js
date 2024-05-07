@@ -56,7 +56,7 @@ export default function LogoSpinner() {
             <img className={"App-logo"} src={reactLogo} alt={"logo"}
                  style={{
                      transform: `rotate(${rotation}deg)`,
-                     animation: isPlaying ? `${cssStyle}` : 'none' // TODO: add velocity on button release
+                     animation: isPlaying ? `${cssStyle}` : 'none'
                  }}
                  draggable="true"
                  onMouseMove={(e) => {
