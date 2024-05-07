@@ -36,6 +36,7 @@ function App() {
     return (
         <Router>
             <div>
+                
                 <nav>
                     <ul>
                         <li>
@@ -46,9 +47,9 @@ function App() {
                         </li>
                     </ul>
                 </nav>
+                
                 <Routes>
-                    <Route path="/" element={uuid ? <Menu buttonLink={`/draw/${uuid}`} uuid={uuid}/> : null}/>
-                    <Route path="/" element={<Footer uuid={uuid} getNewUuid={getNewUuid}/> }/>
+                    <Route path="/" element={uuid ? <Menu buttonLink={`/draw/${uuid}`} uuid={uuid} getNewUuid={getNewUuid}/> : null}/>
                     <Route path="/draw/:uuidParam" element={<Draw initColor={"#61dafb"} bgColor={"#EEEEEE"}/>}/>
                 </Routes>
                 {uuid ? null : <LogoSpinner />}
