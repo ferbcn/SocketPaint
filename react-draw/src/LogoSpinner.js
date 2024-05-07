@@ -1,19 +1,35 @@
 import React, { useState } from 'react';
 import reactLogo from "./media/logo.svg";
 
-export default function LogoMouseSpin() {
+import "./LogoSpinner.css";
+
+export default function LogoSpinner() {
     
     const [prevX, setPrevX] = useState(null);
     const [rotation, setRotation] = useState(0);
     const [mouseDown, setMouseDown] = useState(false);
     const [isPlaying, setIsPlaying] = useState(true);
-
+    const [cssStyle, setCssStyle] = useState('App-logo-spin infinite 20s linear');
+    const [velocity, setVelocity] = useState(5);
+    
+    function randomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+    
+    function setRotationTimeInCssStyle() {
+        const rotTime = 30 / velocity;
+        setCssStyle(`App-logo-spin infinite ${rotTime}s linear`);
+    }
+    
     function handleDrag (e, imgPos) {
         if (!mouseDown) {
             setPrevX(null);
             return;
         }
         if (prevX !== null) {
+            const velocity = prevX - e.clientX;
+            setVelocity(velocity);
+            console.log("Velocity: " + velocity + "px/s")
             if (e.clientY > imgPos.y){
                 setRotation(rotation + prevX - e.clientX);
             }
@@ -27,6 +43,7 @@ export default function LogoMouseSpin() {
     function handleMouseDown () {
         setMouseDown(true);
         setIsPlaying(false);
+        setRotationTimeInCssStyle();
     }
     
     function handleMouseUp () {
@@ -39,7 +56,7 @@ export default function LogoMouseSpin() {
             <img className={"App-logo"} src={reactLogo} alt={"logo"}
                  style={{
                      transform: `rotate(${rotation}deg)`,
-                     animation: isPlaying ? 'App-logo-spin infinite 20s linear' : 'none' // TODO: add velocity on button release
+                     animation: isPlaying ? `${cssStyle}` : 'none' // TODO: add velocity on button release
                  }}
                  draggable="true"
                  onMouseMove={(e) => {
