@@ -145,6 +145,23 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         else if (type === 'square') {
             ctx.fillRect(x-size/2, y-penSize/2-55, size, size);
         }
+        else if (type === 'spray') {
+            drwaRoundSprayOnCanvas(ctx, x, y, color, size);
+        }
+    }
+    
+    function drwaRoundSprayOnCanvas(ctx, x, y, color, size) {
+        ctx.save(); // Save the current state
+        ctx.beginPath();
+        ctx.arc(x, y-55, size, 0, 2 * Math.PI);
+        ctx.clip(); // Create a clipping region
+
+        for (let i = 0; i < size; i++) {
+            let randomX = x - size + Math.random() * 2 * size ;
+            let randomY = y - size + Math.random() * 2 * size ;
+            ctx.fillRect(randomX, randomY-55, 1, 1);
+        }
+        ctx.restore(); // Restore the state
     }
 
     function clearRound(ctx, x, y, radius) {
@@ -271,7 +288,6 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
                         <img className={"small-icon"} alt="" src={copyIcon}></img>
                     </button>
                 </div>
-
             </div>
             )
             }

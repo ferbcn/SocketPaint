@@ -9,6 +9,9 @@ import bucket from './media/bucket.svg';
 import './Toolbar.css';
 
 function Toolbar({ handleClearCommand, saveCanvasToPng, fillColor, handleSelectedFillColor, selectedColor, setSelectedColor, penType, setPenType, penSize, setPenSize }) {
+    
+    const toolOptions = ["round", "square", "spray", "eraser"];
+    
     return (
         <div>
             <div className={"container-row"}>
@@ -37,9 +40,9 @@ function Toolbar({ handleClearCommand, saveCanvasToPng, fillColor, handleSelecte
                             <select value={penType} onChange={e => {
                                 setPenType(e.target.value);
                                 }}>
-                                <option value="round">Round</option>
-                                <option value="square">Square</option>
-                                <option value="eraser">Eraser</option>
+                                {toolOptions.map(option => (
+                                    <option value={option}>{option}</option>
+                                ))}
                             </select>
                         </span>
                     </div>

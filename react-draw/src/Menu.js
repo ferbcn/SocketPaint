@@ -2,8 +2,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import './Menu.css'; // Import a CSS file to style your buttons
 import LogoSpinner from './LogoSpinner';
+import Footer from "./Footer";
 
-export default function Menu({buttonLink}) {
+export default function Menu({buttonLink, uuid, getNewUuid}) {
     
     return (
         <div className={"container-column"}>
@@ -17,6 +18,7 @@ export default function Menu({buttonLink}) {
                     </Link>
                 </div>
             </div>
+            <Footer uuid={uuid} getNewUuid={getNewUuid}/>
         </div>
     );
 }

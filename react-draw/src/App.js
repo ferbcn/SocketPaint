@@ -7,6 +7,7 @@ import LogoSpinner from "./LogoSpinner";
 
 import './App.css';
 import refreshLogo from './media/repeat.svg';
+import Footer from "./Footer";
 
 function App() {
     const [uuid, setUuid] = useState(null);
@@ -46,16 +47,10 @@ function App() {
                     </ul>
                 </nav>
                 <Routes>
-                    <Route path="/" element={uuid ? <Menu buttonLink={`/draw/${uuid}`}/> : null}/>
+                    <Route path="/" element={uuid ? <Menu buttonLink={`/draw/${uuid}`} uuid={uuid}/> : null}/>
+                    <Route path="/" element={<Footer uuid={uuid} getNewUuid={getNewUuid}/> }/>
                     <Route path="/draw/:uuidParam" element={<Draw initColor={"#61dafb"} bgColor={"#EEEEEE"}/>}/>
                 </Routes>
-                <div className="uuidFooter">
-                    <p>
-                        Session ID: {uuid || "API Error!"} 
-                        <img className={"icon-reload"} alt="refresh" src={refreshLogo} onClick={getNewUuid}/>
-                    </p>
-                </div>
-
                 {uuid ? null : <LogoSpinner />}
                 
             </div>

@@ -3,6 +3,8 @@
   --bgColor: #282c34;
 }
 
+html, body {margin: 0; height: 100%; overflow: hidden}
+
 .App {
   text-align: center;
 }
