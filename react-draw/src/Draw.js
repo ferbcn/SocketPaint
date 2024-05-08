@@ -66,6 +66,7 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         // clean up event listener on unmount
         return () => {
             window.removeEventListener('resize', handleResize);
+            clearInterval(rttInterval);
         };
 
     }, [uuidParam]); // Added uuidParam to the dependency array
