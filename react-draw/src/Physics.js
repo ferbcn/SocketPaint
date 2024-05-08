@@ -2,8 +2,11 @@ import React, {useEffect, useState, useRef} from 'react';
 import './Physics.css';
 
 import Toolbar from './Toolbar';
+import repeatIcon from "./media/repeat.svg";
 
-export default function Physics({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
+export default function Physics({ initColor, bgColor}) {
+    const CANVAS_CORRECTION_Y_PIXELS = 55;
+    
     const [canvasSize, setCanvasSize] = useState({x: null, y: null});
     const [coords, setCoords] = useState({x: 0, y: 0});
     const [mouseDown, setMouseDown] = useState(false);
@@ -14,9 +17,20 @@ export default function Physics({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     const [fillColor, setFillColor] = useState(bgColor);
 
     const [points, setPoints] = useState([]);
+    const [initpoints, setInitPoints] = useState([]);
     const [isToggled, setIsToggled] = useState(false);
-
+    const [gravity, setGravity] = useState(0.9);
+    const [airResistance, setairResistance] = useState(0.01);
+    const [elasticity, setElasticity] = useState(1.0);
+    
+    let canvas = null;
+    let ctx = null;
+    
     useEffect(() => {
+        
+        // init canvas
+        canvas = canvasRef.current;
+        ctx = canvas.getContext('2d', {alpha: true});
 
         // prevent scrolling on touch devices
         document.body.addEventListener('touchmove', function(e) {
@@ -25,8 +39,8 @@ export default function Physics({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
 
         // handle window resize
         const handleResize = () => {
-            const canvas = canvasRef.current;
-            const ctx = canvas.getContext('2d');
+            canvas = canvasRef.current;
+            ctx = canvas.getContext('2d');
 
             // Save current image data
             const imageData = canvas.toDataURL();
@@ -76,7 +90,7 @@ export default function Physics({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         const touch = e.touches[0];
         setCoords({
             x: touch.clientX,
-            y: touch.clientY,
+            y: touch.clientY - CANVAS_CORRECTION_Y_PIXELS,
         });
         setMouseDown(true);
         processPaint()
@@ -93,7 +107,7 @@ export default function Physics({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     const handleMouseMove = event => {
         setCoords({
             x: event.clientX,
-            y: event.clientY,
+            y: event.clientY - 55,
         });
         
         if (mouseDown) {
@@ -135,8 +149,10 @@ export default function Physics({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         // Special commands
         else if (msg.hasOwnProperty('command')) {
             if (msg.command === 'clear') {
+                setIsToggled(false)
+                setPoints([]);
+                setInitPoints([]);
                 clearCanvas();
-                setPoints([])
             }
             else if (msg.command === 'fill') {
                 drawFillColor(msg.color);
@@ -145,38 +161,44 @@ export default function Physics({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     }
     
     function drawOnCanvas(x, y, color, size, type) {
+        if (isToggled) {
+            return;
+        }
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d', {alpha: true});
         ctx.fillStyle = color;
         if (type === 'eraser') {
-            clearRound(ctx, x, y-55, size)
+            clearRound(ctx, x, y, size)
         }
         else if (type === 'round') {
             ctx.beginPath();
-            ctx.arc(x, y-55, size, 0, 2 * Math.PI);
+            ctx.arc(x, y, size, 0, 2 * Math.PI);
             ctx.fill();
-
-            // Add the point to the points array
-            setPoints(prevPoints => [...prevPoints, {x, y, color, size, type, speed: 0.5}]);
         }
         else if (type === 'square') {
-            ctx.fillRect(x-size/2, y-penSize/2-55, size, size);
+            ctx.fillRect(x-size/2, y-penSize/2, size, size);
         }
         else if (type === 'spray') {
-            drawRoundSprayOnCanvas(ctx, x, y, color, size);
+            drawRoundSprayOnCanvas(ctx, x, y, color, size, type);
         }
+        // Add the point to the points array
+        setPoints(prevPoints => [...prevPoints, {x, y, color, size, type, speed: 0.0}]);
+        setInitPoints(prevPoints => [...prevPoints, {x, y, color, size, type, speed: 0.0}])
     }
     
-    function drawRoundSprayOnCanvas(ctx, x, y, color, size) {
+    function drawRoundSprayOnCanvas(ctx, x, y, color, size, type) {
         ctx.save(); // Save the current state
         ctx.beginPath();
-        ctx.arc(x, y-55, size, 0, 2 * Math.PI);
+        ctx.arc(x, y, size, 0, 2 * Math.PI);
         ctx.clip(); // Create a clipping region
 
         for (let i = 0; i < size; i++) {
             let randomX = x - size + Math.random() * 2 * size ;
             let randomY = y - size + Math.random() * 2 * size ;
-            ctx.fillRect(randomX, randomY-55, 1, 1);
+            ctx.fillRect(randomX, randomY, 1, 1);
+            
+            // Add the point to the points array
+            setPoints(prevPoints => [...prevPoints, {x, y, color, size, type, speed: 0.0}]);
         }
         ctx.restore(); // Restore the state
     }
@@ -191,9 +213,7 @@ export default function Physics({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     }
     
     function clearCanvas() {
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawFillColor(bgColor);
         points.forEach(point => {
             setPoints(prevPoints => prevPoints.filter(p => p !== point));
         });
@@ -216,6 +236,10 @@ export default function Physics({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         ctx.globalCompositeOperation = 'source-over';
         ctx.fillStyle = color;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // draw current points if any
+        points.forEach(point => {
+            drawOnCanvas(point.x, point.y, point.color, point.size, point.type);
+        });
     }
 
     function handleTouchStart(e) {
@@ -225,49 +249,72 @@ export default function Physics({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
             y: touch.clientY,
         });
     }
+    
+    function reloadInitState() {
+        setIsToggled(false)
+        // clear the canvas
+        clearCanvas();
+        // reset points
+        setPoints(initpoints);
+        setIsToggled(true)
+        // animatePoints();
+        setIsToggled(false)
+        // drawAllPointsOnCanvas();
+    }
 
     function animatePoints() {
         if (!isToggled) {
             return;
         }
-        
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d', {alpha: true});
-        const gravity = 5;
-        
-        // Clear the canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
         points.forEach(point => {
-            console.log(points.length);
-            
-            // Apply gravity to the point's y coordinate
+
+            // Apply gravity
             point.speed += gravity;
+
+            // Apply air resistance
+            point.speed -= airResistance * point.speed;
+
+            // Move the point
             point.y += point.speed;
 
-            // If the point hits the floor, make it bounce
+            // Bounce if the point hits the floor, apply friction on bounce
             if (point.y + point.size > canvas.height) {
-                point.speed *= 0.9
                 point.speed *= -1;
-                point.y -= point.size/2;
+                point.y = canvas.height - point.size;
+                point.speed *= elasticity;
             }
-            
-            // remove the point if speed is zero
-            if (point.speed <= 0.1) {
-                setPoints(prevPoints => prevPoints.filter(p => p !== point));
+        });
+        drawAllPointsOnCanvas()
+    }
+    
+    
+    function drawAllPointsOnCanvas() {
+        
+        // clear the canvas with current fill color
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = fillColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        points.forEach(point => {
+
+            if (point.type === 'round') {
+                // Redraw the point
+                ctx.fillStyle = point.color;
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, point.size, 0, 2 * Math.PI);
+                ctx.fill();
             }
-            // Redraw the point at the new position
-            ctx.fillStyle = point.color;
-            ctx.beginPath();
-            ctx.arc(point.x, point.y, point.size, 0, 2 * Math.PI);
-            ctx.fill();
+            else if (point.type === 'square') {
+                ctx.fillStyle = point.color;
+                ctx.fillRect(point.x-point.size/2, point.y-penSize/2, point.size, point.size);
+            }
+
         });
         
     }
 
     const handleToggle = () => {
         setIsToggled(!isToggled);
-        animatePoints();
     }
 
     return (
@@ -300,9 +347,12 @@ export default function Physics({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
                 setPenSize={setPenSize}
             />
 
-            <div className={"link-container"}>
+            <div className={"toggle-container"}>
+                <button className={"tool-button"} onClick={reloadInitState}>
+                    <img className={"small-icon"} alt="" src={repeatIcon}></img>
+                </button>
                 <label>
-                    <input type="checkbox" checked={isToggled} onChange={handleToggle}/>
+                    Animation: <input type="checkbox" checked={isToggled} onChange={handleToggle}/>
                     {isToggled ? 'ON' : 'OFF'}
                 </label>
             </div>

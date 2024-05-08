@@ -2,7 +2,7 @@
     height: calc(100vh - 120px); /* Adjust this value based on the height of your menu bar */
     font-size: 20px;
     cursor: pointer;
-    background-color: white;
+    background-color: #EEEEEE;
     color: var(--accentColor);
 }
 
@@ -57,4 +57,15 @@
     color: var(--accentColor);
     font-size: 12px;
     width: 10px;
+}
+
+.toggle-container{
+    position: absolute;
+    top: 10px;
+    left: 80%;
+    font-size: 12px;
+    text-align: right;
+    color: lightgray;
+    border: none;
+    flex-wrap: wrap;
 }

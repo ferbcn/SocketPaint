@@ -8,7 +8,7 @@ import bucket from './media/bucket.svg';
 
 import './Toolbar.css';
 
-function Toolbar({ handleClearCommand, saveCanvasToPng, fillColor, handleSelectedFillColor, selectedColor, setSelectedColor, penType, setPenType, penSize, setPenSize }) {
+function Toolbar({ handleClearCommand, saveCanvasToPng, fillColor, handleSelectedFillColor, selectedColor, setSelectedColor, penType, setPenType, penSize, setPenSize}) {
     
     const toolOptions = ["round", "square", "spray", "eraser"];
     
@@ -40,8 +40,8 @@ function Toolbar({ handleClearCommand, saveCanvasToPng, fillColor, handleSelecte
                             <select value={penType} onChange={e => {
                                 setPenType(e.target.value);
                                 }}>
-                                {toolOptions.map(option => (
-                                    <option value={option}>{option}</option>
+                                {toolOptions.map((option, index) => (
+                                    <option key={index} value={option}>{option}</option>
                                 ))}
                             </select>
                         </span>
@@ -51,6 +51,7 @@ function Toolbar({ handleClearCommand, saveCanvasToPng, fillColor, handleSelecte
                                onChange={e => setPenSize(e.target.value)}/>
                         <div className="input-size">Size: {penSize}</div>
                     </div>
+                    
                 </div>
             </div>
         </div>
