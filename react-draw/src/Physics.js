@@ -5,9 +5,10 @@ import Toolbar from './Toolbar';
 
 import PhysicsToolbar from "./PhysicsToolbar";
 import AnimToolbar from "./AnimToolbar";
+import FusionToolbar from "./FusionToolbar";
 
 export default function Physics({ initColor, bgColor}) {
-        const CANVAS_CORRECTION_Y_PIXELS = 55;
+        const CANVAS_CORRECTION_Y_PIXELS = 0;
     
     const [canvasSize, setCanvasSize] = useState({x: null, y: null});
     const [coords, setCoords] = useState({x: 0, y: 0});
@@ -24,9 +25,14 @@ export default function Physics({ initColor, bgColor}) {
     const [initPoints, setInitPoints] = useState([]);
     const [isToggled, setIsToggled] = useState(false);
     const [gravity, setGravity] = useState(0.1);
-    const [airResistance, setairResistance] = useState(0.01);
+    const [airResistance, setairResistance] = useState(0.0);
     const [elasticity, setElasticity] = useState(1.0);
     const [timeOut, setTimeOut] = useState(10);
+    const [removePoints, setRemovePoints] = useState([]);
+    const [pointCount, setPointCount] = useState(0);
+    
+    const [isCleared, setIsCleared] = useState(false);
+    const [fusionFactor, setFusionFactor] = useState(30);
     
     useEffect(() => {
         
@@ -51,6 +57,9 @@ export default function Physics({ initColor, bgColor}) {
             animInterval = setInterval(animatePoints, timeOut); // milliseconds
         }
         
+        // set pointCount variable
+        setPointCount(points.length);
+        
         // clean up event listener on unmount
         return () => {
             window.removeEventListener('resize', handleResize);
@@ -59,7 +68,7 @@ export default function Physics({ initColor, bgColor}) {
             }
         };
         
-    }, [isToggled]);
+    }, [isToggled, gravity, elasticity, timeOut, isCleared, points, fusionFactor]);
 
     // handle window resize
     const handleResize = () => {
@@ -70,7 +79,7 @@ export default function Physics({ initColor, bgColor}) {
         // Resize the canvas
         setCanvasSize({
             x: window.innerWidth,
-            y: window.innerHeight - 60
+            y: window.innerHeight - CANVAS_CORRECTION_Y_PIXELS
         });
 
         // Create a new image and set its source to the saved image data
@@ -112,7 +121,7 @@ export default function Physics({ initColor, bgColor}) {
     const handleMouseMove = event => {
         setCoords({
             x: event.clientX,
-            y: event.clientY - 55,
+            y: event.clientY - CANVAS_CORRECTION_Y_PIXELS,
         });
         
         if (mouseDown) {
@@ -168,7 +177,7 @@ export default function Physics({ initColor, bgColor}) {
                 setIsToggled(false)
                 setPoints([]);
                 setInitPoints([]);
-                drawFullCanvasFillColor(bgColor);
+                drawFullCanvasFillColor(fillColor);
             }
             else if (msg.command === 'fill') {
                 drawFullCanvasFillColor(msg.color);
@@ -240,6 +249,7 @@ export default function Physics({ initColor, bgColor}) {
     }
 
     function drawFullCanvasFillColor(color) {
+        setIsToggled(true);
         setFillColor(color);
         // fill the canvas with the new color
         const canvas = canvasRef.current;
@@ -252,17 +262,18 @@ export default function Physics({ initColor, bgColor}) {
         points.forEach(point => {
             drawOnCanvas(point.x, point.y, point.color, point.size, point.type);
         });
+        setIsToggled(false);
         
     }
     
     function reloadInitState() {
-        setIsToggled(false)
         setPoints([]);
         initPoints.forEach(point => {
             setPoints(prevPoints => [...prevPoints, JSON.parse(JSON.stringify(point))]);
         });
-        drawFullCanvasFillColor(bgColor);
+        drawFullCanvasFillColor(fillColor);
         drawAllPointsOnCanvas();
+        setIsToggled(false);
     }
 
     function animatePoints() {
@@ -288,6 +299,62 @@ export default function Physics({ initColor, bgColor}) {
                 point.y = canvasRef.current.height - point.size;
                 point.speedY *= elasticity;
             }
+            // Bounce if the point hits the ceiling
+            else if (point.y - point.size < 0) {
+                point.speedY *= -1;
+                point.y = point.size;
+                point.speedY *= elasticity;
+            }
+            
+            // collision detection, bounce when hit by other point
+            const FUSION_LEVEL = fusionFactor;
+            
+            points.forEach(otherPoint => {
+                if (point !== otherPoint) {
+                    const dx = point.x - otherPoint.x;
+                    const dy = point.y - otherPoint.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < point.size + otherPoint.size) {
+                        // if speed of both points larger than 10 then combine both points into one point
+                        if (Math.abs(point.speedX) + Math.abs(otherPoint.speedX) > FUSION_LEVEL || Math.abs(point.speedY) + Math.abs(otherPoint.speedY) > FUSION_LEVEL){
+                            point.x = (point.x + otherPoint.x) / 2;
+                            point.y = (point.y + otherPoint.y) / 2;
+                            point.size = (point.size + otherPoint.size) / 2;
+                            point.speedX = (point.speedX + otherPoint.speedX) / 2;
+                            point.speedY = (point.speedY + otherPoint.speedY) / 2;
+                            
+                            // add point to points to remove list
+                            //setRemovePoints(prevPoints => prevPoints.filter(p => p !== otherPoint));
+                            setPoints(prevPoints => prevPoints.filter(p => p !== otherPoint));
+                            
+                            // combine colors of both points
+                            const color1 = point.color;
+                            const color2 = otherPoint.color;
+                            const r1 = parseInt(color1.slice(1,3), 16);
+                            const g1 = parseInt(color1.slice(3,5), 16);
+                            const b1 = parseInt(color1.slice(5,7), 16);
+                            const r2 = parseInt(color2.slice(1,3), 16);
+                            const g2 = parseInt(color2.slice(3,5), 16);
+                            const b2 = parseInt(color2.slice(5,7), 16);
+                            const r = Math.floor((r1 + r2) / 2);
+                            const g = Math.floor((g1 + g2) / 2);
+                            const b = Math.floor((b1 + b2) / 2);
+                            point.color = "#" + r.toString(16) + g.toString(16) + b.toString(16);
+                        }
+                        else{
+                            const angle = Math.atan2(dy, dx);
+                            const targetX = otherPoint.x + Math.cos(angle) * (point.size + otherPoint.size);
+                            const targetY = otherPoint.y + Math.sin(angle) * (point.size + otherPoint.size);
+                            const ax = (targetX - point.x) * 0.1;
+                            const ay = (targetY - point.y) * 0.1;
+                            point.speedX -= ax;
+                            point.speedY -= ay;
+                            otherPoint.speedX += ax;
+                            otherPoint.speedY += ay;
+                        }
+                    }
+                }
+            });
             
             // Bounce if the point hits walls
             if (point.x + point.size > canvasRef.current.width) {
@@ -303,7 +370,15 @@ export default function Physics({ initColor, bgColor}) {
             
             
         });
+        pointsToRemove();
         drawAllPointsOnCanvas()
+    }
+    
+    function pointsToRemove() {
+        removePoints.forEach(point => {
+            setPoints(prevPoints => prevPoints.filter(p => p !== point));
+        });
+        setRemovePoints([]);
     }
     
     
@@ -354,7 +429,7 @@ export default function Physics({ initColor, bgColor}) {
 
             </div>
             
-            <AnimToolbar isToggled={isToggled} handleToggle={handleToggle} reloadInitState={reloadInitState}/>
+            <AnimToolbar isToggled={isToggled} handleToggle={handleToggle} reloadInitState={reloadInitState} pointCount={pointCount}/>
 
             <Toolbar
                 handleClearCommand={handleClearCommand}
@@ -373,7 +448,7 @@ export default function Physics({ initColor, bgColor}) {
                             setGravity={setGravity} setElasticity={setElasticity}
                             timeOut={timeOut} setTimeOut={setTimeOut}/>
             
-            
+            <FusionToolbar fusionFactor={fusionFactor} setFusionFactor={setFusionFactor} pointCount={pointCount}/>
             
 
         </div>

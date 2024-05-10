@@ -40,22 +40,22 @@ function App() {
         <Router>
             <div>
                 
-                <nav>
-                    <ul>
-                        <li>
-                            <Link to="/">Start</Link>
-                        </li>
-                        <li>
-                            {uuid ? <Link to={`/draw/${uuid}`}>Draw</Link> : null}
-                        </li>
-                        <li>
-                            <Link to={"/physics"}>Physics</Link>
-                        </li>
-                    </ul>
-                </nav>
+                {/*<nav>*/}
+                {/*    <ul>*/}
+                {/*        <li>*/}
+                {/*            <Link to="/">Start</Link>*/}
+                {/*        </li>*/}
+                {/*        <li>*/}
+                {/*            {uuid ? <Link to={`/draw/${uuid}`}>Draw</Link> : null}*/}
+                {/*        </li>*/}
+                {/*        <li>*/}
+                {/*            <Link to={"/physics"}>Physics</Link>*/}
+                {/*        </li>*/}
+                {/*    </ul>*/}
+                {/*</nav>*/}
                 
                 <Routes>
-                    <Route path="/" element={uuid ? <Menu buttonLink={`/draw/${uuid}`} uuid={uuid} getNewUuid={getNewUuid}/> : null}/>
+                    <Route path="/" element={<Menu buttonLink={`/physics`}/>}/>
                     <Route path="/draw/:uuidParam" element={<Draw initColor={"#61dafb"} bgColor={"#EEEEEE"}/>}/>
                     <Route path="/physics" element={<Physics initColor={"#FF2222"} bgColor={"#EEEEEE"}/>}/>
                 </Routes>

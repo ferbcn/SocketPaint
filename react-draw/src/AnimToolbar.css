@@ -1,0 +1,16 @@
+.anim-container{
+    position: absolute;
+    top: 15px;
+    left: 75%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    font-size: 12px;
+    text-align: right;
+    color: lightgray;
+    border: none;
+    flex-wrap: wrap;
+    background-color: var(--bgColor);
+    padding: 10px;
+    border-radius: 5px;
+}

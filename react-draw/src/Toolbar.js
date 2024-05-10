@@ -15,7 +15,6 @@ function Toolbar({ handleClearCommand, saveCanvasToPng, fillColor, handleSelecte
     
     return (
         <div>
-            <Draggable>
                 <div className={"tool-button-container"}>
                     <div className={"container-center"}>
                         <button className={"tool-button"} type={"button"} onClick={handleClearCommand}>
@@ -54,7 +53,6 @@ function Toolbar({ handleClearCommand, saveCanvasToPng, fillColor, handleSelecte
                     </div>
                     
                 </div>
-            </Draggable>
         </div>
     );
 }

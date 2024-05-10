@@ -1,6 +1,6 @@
 .tool-button-container{
     position: absolute;
-    bottom: 1%;
+    bottom: 5px;
     left: 10%;
     background-color: rgba(0, 0, 0, 0.5);
     border-radius: 5px;
