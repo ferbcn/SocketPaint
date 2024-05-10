@@ -23,7 +23,7 @@ export default function Physics({ initColor, bgColor}) {
     const [points, setPoints] = useState([]);
     const [initPoints, setInitPoints] = useState([]);
     const [isToggled, setIsToggled] = useState(false);
-    const [gravity, setGravity] = useState(0.9);
+    const [gravity, setGravity] = useState(0.1);
     const [airResistance, setairResistance] = useState(0.01);
     const [elasticity, setElasticity] = useState(1.0);
     const [timeOut, setTimeOut] = useState(10);
@@ -273,7 +273,7 @@ export default function Physics({ initColor, bgColor}) {
 
             // Apply gravity
             point.speedY += gravity;
-
+            
             // Apply air resistance
             point.speedY -= airResistance * point.speedY;
             point.speedX -= airResistance * point.speedX;

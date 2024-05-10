@@ -9,9 +9,9 @@ function PhysicsToolbar({ gravity, elasticity, setGravity, setElasticity, timeOu
         <div>
             <Draggable>
                 <div className={"phy-toolbar"}>
-                    <div className={"range-container"}>
-                        <input type={"range"} min={0.6} max={0.99} step={0.01} value={gravity}
-                               onChange={e => setGravity(e.target.value)}/>
+                    <div className={"range-container"} >
+                        <input type={"range"} min={0.1} max={1.0} step={0.1} value={gravity}
+                               onChange={e => setGravity(parseFloat(e.target.value))}/>
                         <div className="input-size">Gravity: {gravity}</div>
                     </div>
                     <div className={"range-container"}>
