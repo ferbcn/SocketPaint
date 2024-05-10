@@ -72,12 +72,25 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         };
 
     }, [uuidParam]); // Added uuidParam to the dependency array
-
+    
+    const [startPoint, setStartPoint] = useState({x: 0, y: 0});
+    
     const handleMouseDown = event => {
-        setMouseDown(true)
-        sendPixel()
+        if (penType === 'line') {
+            setStartPoint({
+                x: event.clientX,
+                y: event.clientY,
+            });
+        }
+        else{
+            setMouseDown(true)
+            sendPixel()
+        }
     };
     const handleMouseUp = event => {
+        if (penType === 'line') {
+            sendGeo()
+        }
         setMouseDown(false)
     };
     
@@ -90,6 +103,21 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
             sendPixel()
         }
     };
+    
+    function sendGeo() {
+        const msg = {
+            startX: startPoint.x,
+            startY: startPoint.y,
+            x: coords.x,
+            y: coords.y,
+            color: selectedColor,
+            size: penSize,
+            type: penType,
+            uuid: uuidParam
+        }
+        send(JSON.stringify(msg))
+    }
+    
     function sendPixel() {
         const msg = {
             x: coords.x,
@@ -114,7 +142,7 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         msg = JSON.parse(msg);
         // Basic drawing
         if (msg.hasOwnProperty('color') && msg.hasOwnProperty('size') && msg.hasOwnProperty('type')){
-            drawOnCanvas(msg.x, msg.y, msg.color, msg.size, msg.type);
+            drawOnCanvas(msg.x, msg.y, msg.color, msg.size, msg.type, msg.XStart, msg.YStart);
         }
         // Special commands
         else if (msg.hasOwnProperty('command')) {
@@ -150,6 +178,14 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         }
         else if (type === 'spray') {
             drwaRoundSprayOnCanvas(ctx, x, y, color, size);
+        }
+        else if (type === 'line') {
+            ctx.beginPath();
+            ctx.moveTo(startPoint.x, startPoint.y-SCREEN_CORR_FACTOR);
+            ctx.lineTo(x, y-SCREEN_CORR_FACTOR);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = size;
+            ctx.stroke();
         }
     }
     

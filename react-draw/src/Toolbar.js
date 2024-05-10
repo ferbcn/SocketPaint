@@ -11,7 +11,7 @@ import Draggable from 'react-draggable';
 
 function Toolbar({ handleClearCommand, saveCanvasToPng, fillColor, handleSelectedFillColor, selectedColor, setSelectedColor, penType, setPenType, penSize, setPenSize}) {
     
-    const toolOptions = ["round", "square", "spray", "eraser"];
+    const toolOptions = ["round", "square", "spray", "line", "eraser"];
     
     return (
         <div>
