@@ -227,6 +227,7 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        setPoints([]);
     }
     function saveCanvasToPng() {
         const canvas = canvasRef.current;
@@ -259,11 +260,21 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     }
 
     function handleTouchStart(e) {
-        const touch = e.touches[0];
-        setCoords({
-            x: touch.clientX,
-            y: touch.clientY,
-        });
+        if (penType === 'line') {
+            const touch = e.touches[0];
+            setStartPoint({
+                x: touch.clientX,
+                y: touch.clientY,
+            });
+        }
+        else{
+            const touch = e.touches[0];
+            setCoords({
+                x: touch.clientX,
+                y: touch.clientY,
+            });
+            
+        }
     }
     
     function handleTouch(e) {
