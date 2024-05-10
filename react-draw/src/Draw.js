@@ -20,7 +20,9 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     const { uuidParam } = useParams()
     const [copySuccess, setCopySuccess] = useState('');
     const [roundTripTime, setRoundTripTime] = useState(0);
-
+    
+    const SCREEN_CORR_FACTOR = 0;
+    
     useEffect(() => {
 
         // prevent scrolling on touch devices
@@ -41,7 +43,7 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
             // Resize the canvas
             setCanvasSize({
                 x: window.innerWidth,
-                y: window.innerHeight - 120
+                y: window.innerHeight
             });
 
             // Create a new image and set its source to the saved image data
@@ -136,15 +138,15 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         const ctx = canvas.getContext('2d', {alpha: true});
         ctx.fillStyle = color;
         if (type === 'eraser') {
-            clearRound(ctx, x, y-55, size)
+            clearRound(ctx, x, y-SCREEN_CORR_FACTOR, size)
         }
         else if (type === 'round') {
             ctx.beginPath();
-            ctx.arc(x, y-55, size, 0, 2 * Math.PI);
+            ctx.arc(x, y-SCREEN_CORR_FACTOR, size, 0, 2 * Math.PI);
             ctx.fill();
         }
         else if (type === 'square') {
-            ctx.fillRect(x-size/2, y-penSize/2-55, size, size);
+            ctx.fillRect(x-size/2, y-penSize/2-SCREEN_CORR_FACTOR, size, size);
         }
         else if (type === 'spray') {
             drwaRoundSprayOnCanvas(ctx, x, y, color, size);
@@ -154,13 +156,13 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     function drwaRoundSprayOnCanvas(ctx, x, y, color, size) {
         ctx.save(); // Save the current state
         ctx.beginPath();
-        ctx.arc(x, y-55, size, 0, 2 * Math.PI);
+        ctx.arc(x, y-SCREEN_CORR_FACTOR, size, 0, 2 * Math.PI);
         ctx.clip(); // Create a clipping region
 
         for (let i = 0; i < size; i++) {
             let randomX = x - size + Math.random() * 2 * size ;
             let randomY = y - size + Math.random() * 2 * size ;
-            ctx.fillRect(randomX, randomY-55, 1, 1);
+            ctx.fillRect(randomX, randomY-SCREEN_CORR_FACTOR, 1, 1);
         }
         ctx.restore(); // Restore the state
     }
