@@ -2,10 +2,12 @@ import React, {useEffect, useState, useRef} from 'react';
 import './Physics.css';
 
 import Toolbar from './Toolbar';
-import repeatIcon from "./media/repeat.svg";
+
+import PhysicsToolbar from "./PhysicsToolbar";
+import AnimToolbar from "./AnimToolbar";
 
 export default function Physics({ initColor, bgColor}) {
-    const CANVAS_CORRECTION_Y_PIXELS = 55;
+        const CANVAS_CORRECTION_Y_PIXELS = 55;
     
     const [canvasSize, setCanvasSize] = useState({x: null, y: null});
     const [coords, setCoords] = useState({x: 0, y: 0});
@@ -13,53 +15,28 @@ export default function Physics({ initColor, bgColor}) {
     const [selectedColor, setSelectedColor] = useState(initColor);
     const [penSize, setPenSize] = useState(25);
     const [penType, setPenType] = useState("round");
-    const canvasRef = useRef(null);
     const [fillColor, setFillColor] = useState(bgColor);
+    
+    const canvasRef = useRef(null);
+    const ctxRef = useRef(null);
 
     const [points, setPoints] = useState([]);
-    const [initpoints, setInitPoints] = useState([]);
+    const [initPoints, setInitPoints] = useState([]);
     const [isToggled, setIsToggled] = useState(false);
     const [gravity, setGravity] = useState(0.9);
     const [airResistance, setairResistance] = useState(0.01);
     const [elasticity, setElasticity] = useState(1.0);
-    
-    let canvas = null;
-    let ctx = null;
+    const [timeOut, setTimeOut] = useState(10);
     
     useEffect(() => {
         
         // init canvas
-        canvas = canvasRef.current;
-        ctx = canvas.getContext('2d', {alpha: true});
+        ctxRef.current = canvasRef.current.getContext('2d', {alpha: true});
 
         // prevent scrolling on touch devices
         document.body.addEventListener('touchmove', function(e) {
             e.preventDefault();
         }, {passive: false});
-
-        // handle window resize
-        const handleResize = () => {
-            canvas = canvasRef.current;
-            ctx = canvas.getContext('2d');
-
-            // Save current image data
-            const imageData = canvas.toDataURL();
-
-            // Resize the canvas
-            setCanvasSize({
-                x: window.innerWidth,
-                y: window.innerHeight - 120
-            });
-
-            // Create a new image and set its source to the saved image data
-            const img = new Image();
-            img.src = imageData;
-
-            // When the image loads, draw it on the resized canvas
-            img.onload = function() {
-                ctx.drawImage(img, 0, 0);
-            };
-        };
 
         // call handleResize immediately to set initial size
         handleResize();
@@ -68,12 +45,10 @@ export default function Physics({ initColor, bgColor}) {
         window.addEventListener('resize', handleResize);
         
         // Start the animation interval
-        //const animInterval = setInterval(animatePoints, 10); // milliseconds
         let animInterval = null;
-        
         if (isToggled) {
             // If the toggle is on, start the animation
-            animInterval = setInterval(animatePoints, 10); // milliseconds
+            animInterval = setInterval(animatePoints, timeOut); // milliseconds
         }
         
         // clean up event listener on unmount
@@ -84,8 +59,38 @@ export default function Physics({ initColor, bgColor}) {
             }
         };
         
-    }, [isToggled]); 
+    }, [isToggled]);
 
+    // handle window resize
+    const handleResize = () => {
+
+        // Save current image data
+        const imageData = canvasRef.current.toDataURL();
+
+        // Resize the canvas
+        setCanvasSize({
+            x: window.innerWidth,
+            y: window.innerHeight - 60
+        });
+
+        // Create a new image and set its source to the saved image data
+        const img = new Image();
+        img.src = imageData;
+
+        // When the image loads, draw it on the resized canvas
+        img.onload = function() {
+            ctxRef.current.drawImage(img, 0, 0);
+        };
+    };
+
+    function handleTouchStart(e) {
+        const touch = e.touches[0];
+        setCoords({
+            x: touch.clientX,
+            y: touch.clientY,
+        });
+    }
+    
     function handleTouch(e) {
         const touch = e.touches[0];
         setCoords({
@@ -121,7 +126,9 @@ export default function Physics({ initColor, bgColor}) {
             y: coords.y,
             color: selectedColor,
             size: penSize,
-            type: penType
+            type: penType,
+            speedY: 0.0,
+            speedX: getRandom(-10, 10)
         }
         processCommand(msg)
     }
@@ -140,11 +147,20 @@ export default function Physics({ initColor, bgColor}) {
         }
         processCommand(msg)
     }
-    
+
+    function getRandom(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
     function processCommand(msg) {
+        console.log("Message: ", msg);
         // Basic drawing
         if (msg.hasOwnProperty('color') && msg.hasOwnProperty('size') && msg.hasOwnProperty('type')){
+            if (isToggled) {
+                return
+            }
             drawOnCanvas(msg.x, msg.y, msg.color, msg.size, msg.type);
+            addPointsToLists(msg.x, msg.y, msg.color, msg.size, msg.type, msg.speedX, msg.speedY);
         }
         // Special commands
         else if (msg.hasOwnProperty('command')) {
@@ -152,20 +168,26 @@ export default function Physics({ initColor, bgColor}) {
                 setIsToggled(false)
                 setPoints([]);
                 setInitPoints([]);
-                clearCanvas();
+                drawFullCanvasFillColor(bgColor);
             }
             else if (msg.command === 'fill') {
-                drawFillColor(msg.color);
+                drawFullCanvasFillColor(msg.color);
             }
         }
     }
+    
+    function addPointsToLists(x, y, color, size, type, speedX, speedY) {
+        // Add the point to the points array
+        setPoints(prevPoints => [...prevPoints, {x, y, color, size, type, speedX: speedX, speedY: speedY}]);
+        setInitPoints(prevPoints => [...prevPoints, {x, y, color, size, type, speedX: speedX, speedY: speedY}]);
+    }
+    
     
     function drawOnCanvas(x, y, color, size, type) {
         if (isToggled) {
             return;
         }
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d', {alpha: true});
+        const ctx = ctxRef.current;
         ctx.fillStyle = color;
         if (type === 'eraser') {
             clearRound(ctx, x, y, size)
@@ -176,14 +198,11 @@ export default function Physics({ initColor, bgColor}) {
             ctx.fill();
         }
         else if (type === 'square') {
-            ctx.fillRect(x-size/2, y-penSize/2, size, size);
+            ctx.fillRect(x-size, y-penSize, size*2, size*2);
         }
         else if (type === 'spray') {
             drawRoundSprayOnCanvas(ctx, x, y, color, size, type);
         }
-        // Add the point to the points array
-        setPoints(prevPoints => [...prevPoints, {x, y, color, size, type, speed: 0.0}]);
-        setInitPoints(prevPoints => [...prevPoints, {x, y, color, size, type, speed: 0.0}])
     }
     
     function drawRoundSprayOnCanvas(ctx, x, y, color, size, type) {
@@ -198,7 +217,7 @@ export default function Physics({ initColor, bgColor}) {
             ctx.fillRect(randomX, randomY, 1, 1);
             
             // Add the point to the points array
-            setPoints(prevPoints => [...prevPoints, {x, y, color, size, type, speed: 0.0}]);
+            setPoints(prevPoints => [...prevPoints, {x, y, color, size, type, speedX: 0.0, speedY: 0.0}]);
         }
         ctx.restore(); // Restore the state
     }
@@ -212,13 +231,6 @@ export default function Physics({ initColor, bgColor}) {
         ctx.restore();
     }
     
-    function clearCanvas() {
-        drawFillColor(bgColor);
-        points.forEach(point => {
-            setPoints(prevPoints => prevPoints.filter(p => p !== point));
-        });
-    }
-    
     function saveCanvasToPng() {
         const canvas = canvasRef.current;
         const link = document.createElement('a');
@@ -227,39 +239,30 @@ export default function Physics({ initColor, bgColor}) {
         link.click();
     }
 
-    function drawFillColor(color) {
+    function drawFullCanvasFillColor(color) {
         setFillColor(color);
         // fill the canvas with the new color
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
         // set drawing style to opaque
-        ctx.globalCompositeOperation = 'source-over';
+        // ctx.globalCompositeOperation = 'source-over';
         ctx.fillStyle = color;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         // draw current points if any
         points.forEach(point => {
             drawOnCanvas(point.x, point.y, point.color, point.size, point.type);
         });
-    }
-
-    function handleTouchStart(e) {
-        const touch = e.touches[0];
-        setCoords({
-            x: touch.clientX,
-            y: touch.clientY,
-        });
+        
     }
     
     function reloadInitState() {
         setIsToggled(false)
-        // clear the canvas
-        clearCanvas();
-        // reset points
-        setPoints(initpoints);
-        setIsToggled(true)
-        // animatePoints();
-        setIsToggled(false)
-        // drawAllPointsOnCanvas();
+        setPoints([]);
+        initPoints.forEach(point => {
+            setPoints(prevPoints => [...prevPoints, JSON.parse(JSON.stringify(point))]);
+        });
+        drawFullCanvasFillColor(bgColor);
+        drawAllPointsOnCanvas();
     }
 
     function animatePoints() {
@@ -269,20 +272,36 @@ export default function Physics({ initColor, bgColor}) {
         points.forEach(point => {
 
             // Apply gravity
-            point.speed += gravity;
+            point.speedY += gravity;
 
             // Apply air resistance
-            point.speed -= airResistance * point.speed;
-
+            point.speedY -= airResistance * point.speedY;
+            point.speedX -= airResistance * point.speedX;
+            
             // Move the point
-            point.y += point.speed;
+            point.y += point.speedY;
+            point.x += point.speedX;
 
             // Bounce if the point hits the floor, apply friction on bounce
-            if (point.y + point.size > canvas.height) {
-                point.speed *= -1;
-                point.y = canvas.height - point.size;
-                point.speed *= elasticity;
+            if (point.y + point.size > canvasRef.current.height) {
+                point.speedY *= -1;
+                point.y = canvasRef.current.height - point.size;
+                point.speedY *= elasticity;
             }
+            
+            // Bounce if the point hits walls
+            if (point.x + point.size > canvasRef.current.width) {
+                point.speedX *= -1;
+                point.x = canvasRef.current.width - point.size;
+                point.speedX *= elasticity;
+            }
+            else if (point.x - point.size < 0) {
+                point.speedX *= -1;
+                point.x = point.size;
+                point.speedX *= elasticity;
+            }
+            
+            
         });
         drawAllPointsOnCanvas()
     }
@@ -290,10 +309,11 @@ export default function Physics({ initColor, bgColor}) {
     
     function drawAllPointsOnCanvas() {
         
+        const ctx = ctxRef.current;
         // clear the canvas with current fill color
         ctx.globalCompositeOperation = 'source-over';
         ctx.fillStyle = fillColor;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);
         
         points.forEach(point => {
 
@@ -306,7 +326,7 @@ export default function Physics({ initColor, bgColor}) {
             }
             else if (point.type === 'square') {
                 ctx.fillStyle = point.color;
-                ctx.fillRect(point.x-point.size/2, point.y-penSize/2, point.size, point.size);
+                ctx.fillRect(point.x-point.size, point.y-penSize, point.size*2, point.size*2);
             }
 
         });
@@ -333,6 +353,8 @@ export default function Physics({ initColor, bgColor}) {
                         style={{width: '100%', height: '100%'}}/>
 
             </div>
+            
+            <AnimToolbar isToggled={isToggled} handleToggle={handleToggle} reloadInitState={reloadInitState}/>
 
             <Toolbar
                 handleClearCommand={handleClearCommand}
@@ -346,16 +368,13 @@ export default function Physics({ initColor, bgColor}) {
                 penSize={penSize}
                 setPenSize={setPenSize}
             />
-
-            <div className={"toggle-container"}>
-                <button className={"tool-button"} onClick={reloadInitState}>
-                    <img className={"small-icon"} alt="" src={repeatIcon}></img>
-                </button>
-                <label>
-                    Animation: <input type="checkbox" checked={isToggled} onChange={handleToggle}/>
-                    {isToggled ? 'ON' : 'OFF'}
-                </label>
-            </div>
+            
+            <PhysicsToolbar gravity={gravity} elasticity={elasticity}
+                            setGravity={setGravity} setElasticity={setElasticity}
+                            timeOut={timeOut} setTimeOut={setTimeOut}/>
+            
+            
+            
 
         </div>
     )

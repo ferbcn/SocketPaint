@@ -7,6 +7,7 @@ import palette from './media/palette.svg';
 import bucket from './media/bucket.svg';
 
 import './Toolbar.css';
+import Draggable from 'react-draggable';
 
 function Toolbar({ handleClearCommand, saveCanvasToPng, fillColor, handleSelectedFillColor, selectedColor, setSelectedColor, penType, setPenType, penSize, setPenSize}) {
     
@@ -14,9 +15,9 @@ function Toolbar({ handleClearCommand, saveCanvasToPng, fillColor, handleSelecte
     
     return (
         <div>
-            <div className={"container-row"}>
-                <div className={"container-data"}>
-                    <div className={"tool-item"}>
+            <Draggable>
+                <div className={"tool-button-container"}>
+                    <div className={"container-center"}>
                         <button className={"tool-button"} type={"button"} onClick={handleClearCommand}>
                             <img className={"small-icon"} alt={"Clear canvas!"} src={clearIcon}></img>
                         </button>
@@ -53,7 +54,7 @@ function Toolbar({ handleClearCommand, saveCanvasToPng, fillColor, handleSelecte
                     </div>
                     
                 </div>
-            </div>
+            </Draggable>
         </div>
     );
 }

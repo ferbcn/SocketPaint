@@ -12,7 +12,7 @@ function App() {
     const [uuid, setUuid] = useState(null);
 
     useEffect(() => {
-        document.documentElement.style.setProperty('--accentColor', '#FF2222');
+        //document.documentElement.style.setProperty('--accentColor', '#FF2222');
     }, []);
     
     function getNewUuid() {
@@ -59,8 +59,6 @@ function App() {
                     <Route path="/draw/:uuidParam" element={<Draw initColor={"#61dafb"} bgColor={"#EEEEEE"}/>}/>
                     <Route path="/physics" element={<Physics initColor={"#FF2222"} bgColor={"#EEEEEE"}/>}/>
                 </Routes>
-                {uuid ? null : <LogoSpinner />}
-                
             </div>
         </Router>
     );

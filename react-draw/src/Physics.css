@@ -1,5 +1,5 @@
 .container-draw {
-    height: calc(100vh - 120px); /* Adjust this value based on the height of your menu bar */
+    height: calc(100vh - 60px); /* Adjust this value based on the height of your menu bar */
     font-size: 20px;
     cursor: pointer;
     background-color: #EEEEEE;
