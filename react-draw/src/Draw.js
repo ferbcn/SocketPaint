@@ -22,6 +22,7 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     const [roundTripTime, setRoundTripTime] = useState(0);
     
     const SCREEN_CORR_FACTOR = 0;
+    const [points, setPoints] = useState([]);
     
     useEffect(() => {
 
@@ -76,6 +77,7 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     const [startPoint, setStartPoint] = useState({x: 0, y: 0});
     
     const handleMouseDown = event => {
+        setMouseDown(true)
         if (penType === 'line') {
             setStartPoint({
                 x: event.clientX,
@@ -83,12 +85,11 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
             });
         }
         else{
-            setMouseDown(true)
             sendPixel()
         }
     };
     const handleMouseUp = event => {
-        if (penType === 'line') {
+        if (penType === 'line' && mouseDown) {
             sendGeo()
         }
         setMouseDown(false)
@@ -99,15 +100,17 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
             x: event.clientX,
             y: event.clientY,
         });
-        if (mouseDown) {
-            sendPixel()
+        if (penType !== 'line') {
+            if (mouseDown) {
+                sendPixel()
+            }
         }
     };
     
     function sendGeo() {
         const msg = {
-            startX: startPoint.x,
-            startY: startPoint.y,
+            xStart: startPoint.x,
+            yStart: startPoint.y,
             x: coords.x,
             y: coords.y,
             color: selectedColor,
@@ -142,7 +145,15 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         msg = JSON.parse(msg);
         // Basic drawing
         if (msg.hasOwnProperty('color') && msg.hasOwnProperty('size') && msg.hasOwnProperty('type')){
-            drawOnCanvas(msg.x, msg.y, msg.color, msg.size, msg.type, msg.XStart, msg.YStart);
+            drawOnCanvas(msg.x, msg.y, msg.color, msg.size, msg.type, msg.xStart, msg.yStart);
+            const x = msg.x;
+            const y = msg.y;
+            const color = msg.color;
+            const size = msg.size;
+            const type = msg.type;
+            const xStart = msg.xStart;
+            const yStart = msg.yStart;
+            setPoints(prevPoints => [...prevPoints, {x, y, color, size, type, xStart, yStart}]);
         }
         // Special commands
         else if (msg.hasOwnProperty('command')) {
@@ -161,7 +172,7 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
 
     registerOnMessageCallback(onMessageReceived.bind(this));
     
-    function drawOnCanvas(x, y, color, size, type) {
+    function drawOnCanvas(x, y, color, size, type, xStart, yStart) {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d', {alpha: true});
         ctx.fillStyle = color;
@@ -181,7 +192,7 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         }
         else if (type === 'line') {
             ctx.beginPath();
-            ctx.moveTo(startPoint.x, startPoint.y-SCREEN_CORR_FACTOR);
+            ctx.moveTo(xStart, yStart-SCREEN_CORR_FACTOR);
             ctx.lineTo(x, y-SCREEN_CORR_FACTOR);
             ctx.strokeStyle = color;
             ctx.lineWidth = size;
@@ -217,7 +228,6 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
-    
     function saveCanvasToPng() {
         const canvas = canvasRef.current;
         const link = document.createElement('a');
@@ -232,9 +242,13 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
         // set drawing style to opaque
-        ctx.globalCompositeOperation = 'source-over';
+        // ctx.globalCompositeOperation = 'source-over';
         ctx.fillStyle = color;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // draw current points if any
+        points.forEach(point => {
+            drawOnCanvas(point.x, point.y, point.color, point.size, point.type, point.xStart, point.yStart);
+        });
     }
 
     function handleClearCommand() {
