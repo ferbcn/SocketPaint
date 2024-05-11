@@ -24,6 +24,7 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     
     const SCREEN_CORR_FACTOR = 0;
     const [points, setPoints] = useState([]);
+    const [startPoint, setStartPoint] = useState({x: 0, y: 0});
     
     useEffect(() => {
 
@@ -74,8 +75,6 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         };
 
     }, [uuidParam]); // Added uuidParam to the dependency array
-    
-    const [startPoint, setStartPoint] = useState({x: 0, y: 0});
     
     const handleMouseDown = event => {
         setMouseDown(true)

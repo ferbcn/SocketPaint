@@ -6,6 +6,7 @@ import Toolbar from './Toolbar';
 import PhysicsToolbar from "./PhysicsToolbar";
 import AnimToolbar from "./AnimToolbar";
 import FusionToolbar from "./FusionToolbar";
+import {send} from "./websocket";
 
 export default function Physics({ initColor, bgColor}) {
         const CANVAS_CORRECTION_Y_PIXELS = 0;
@@ -32,7 +33,10 @@ export default function Physics({ initColor, bgColor}) {
     const [pointCount, setPointCount] = useState(0);
     
     const [isCleared, setIsCleared] = useState(false);
-    const [fusionFactor, setFusionFactor] = useState(30);
+    const [fusionFactor, setFusionFactor] = useState(100);
+    const [startPoint, setStartPoint] = useState({x: 0, y: 0});
+    
+    const [showToolbars, setShowToolbars] = useState(true);
     
     useEffect(() => {
         
@@ -68,7 +72,7 @@ export default function Physics({ initColor, bgColor}) {
             }
         };
         
-    }, [isToggled, gravity, elasticity, timeOut, isCleared, points, fusionFactor]);
+    }, [isToggled, gravity, elasticity, timeOut, isCleared, points, fusionFactor, showToolbars]);
 
     // handle window resize
     const handleResize = () => {
@@ -112,22 +116,47 @@ export default function Physics({ initColor, bgColor}) {
     
     const handleMouseDown = event => {
         setMouseDown(true)
-        processPaint()
+        if (penType === 'line') {
+            setStartPoint({
+                x: event.clientX,
+                y: event.clientY,
+            });
+        }
+        else{
+            processPaint()
+        }
     };
     const handleMouseUp = event => {
+        if (penType === 'line' && mouseDown) {
+            sendGeo()
+        }
         setMouseDown(false)
     };
-    
+
     const handleMouseMove = event => {
         setCoords({
             x: event.clientX,
             y: event.clientY - CANVAS_CORRECTION_Y_PIXELS,
         });
-        
-        if (mouseDown) {
-            processPaint()
+        if (penType !== 'line') {
+            if (mouseDown) {
+                processPaint()
+            }
         }
     };
+
+    function sendGeo() {
+        const msg = {
+            xStart: startPoint.x,
+            yStart: startPoint.y,
+            x: coords.x,
+            y: coords.y,
+            color: selectedColor,
+            size: penSize,
+            type: penType,
+        }
+        processCommand(msg)
+    }
     
     function processPaint() {
         const msg = {
@@ -168,8 +197,8 @@ export default function Physics({ initColor, bgColor}) {
             if (isToggled) {
                 return
             }
-            drawOnCanvas(msg.x, msg.y, msg.color, msg.size, msg.type);
-            addPointsToLists(msg.x, msg.y, msg.color, msg.size, msg.type, msg.speedX, msg.speedY);
+            drawOnCanvas(msg.x, msg.y, msg.color, msg.size, msg.type, msg.xStart, msg.yStart);
+            addPointsToLists(msg.x, msg.y, msg.color, msg.size, msg.type, msg.speedX, msg.speedY, msg.xStart, msg.yStart);
         }
         // Special commands
         else if (msg.hasOwnProperty('command')) {
@@ -185,14 +214,14 @@ export default function Physics({ initColor, bgColor}) {
         }
     }
     
-    function addPointsToLists(x, y, color, size, type, speedX, speedY) {
+    function addPointsToLists(x, y, color, size, type, speedX, speedY, xStart, yStart) {
         // Add the point to the points array
-        setPoints(prevPoints => [...prevPoints, {x, y, color, size, type, speedX: speedX, speedY: speedY}]);
-        setInitPoints(prevPoints => [...prevPoints, {x, y, color, size, type, speedX: speedX, speedY: speedY}]);
+        setPoints(prevPoints => [...prevPoints, {x, y, color, size, type, speedX: speedX, speedY: speedY, xStart: xStart, yStart: yStart}]);
+        setInitPoints(prevPoints => [...prevPoints, {x, y, color, size, type, speedX: speedX, speedY: speedY, xStart: xStart, yStart: yStart}]);
     }
     
     
-    function drawOnCanvas(x, y, color, size, type) {
+    function drawOnCanvas(x, y, color, size, type, xStart, yStart) {
         if (isToggled) {
             return;
         }
@@ -211,6 +240,14 @@ export default function Physics({ initColor, bgColor}) {
         }
         else if (type === 'spray') {
             drawRoundSprayOnCanvas(ctx, x, y, color, size, type);
+        }
+        else if (type === 'line') {
+            ctx.beginPath();
+            ctx.moveTo(xStart, yStart-CANVAS_CORRECTION_Y_PIXELS);
+            ctx.lineTo(x, y-CANVAS_CORRECTION_Y_PIXELS);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = size;
+            ctx.stroke();
         }
     }
     
@@ -260,7 +297,7 @@ export default function Physics({ initColor, bgColor}) {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         // draw current points if any
         points.forEach(point => {
-            drawOnCanvas(point.x, point.y, point.color, point.size, point.type);
+            drawOnCanvas(point.x, point.y, point.color, point.size, point.type );
         });
         setIsToggled(false);
         
@@ -419,7 +456,11 @@ export default function Physics({ initColor, bgColor}) {
             drawAllPointsOnCanvas();
         }    
     }
-
+    
+    function handleShowToolbars(){
+        setShowToolbars(!showToolbars);
+    }
+    
     return (
         <div>
 
@@ -437,10 +478,12 @@ export default function Physics({ initColor, bgColor}) {
 
             </div>
             
-            <AnimToolbar isToggled={isToggled} handleToggle={handleToggle} reloadInitState={reloadInitState} 
-                         pointCount={pointCount} oneStepBack={oneStepBack}/>
+            <AnimToolbar 
+                isToggled={isToggled} handleToggle={handleToggle} reloadInitState={reloadInitState} 
+                pointCount={pointCount} oneStepBack={oneStepBack} 
+                showToolbars={showToolbars} handleShowToolbar={handleShowToolbars}/>
 
-            <Toolbar
+            {showToolbars && <Toolbar
                 handleClearCommand={handleClearCommand}
                 saveCanvasToPng={saveCanvasToPng}
                 fillColor={fillColor}
@@ -451,13 +494,16 @@ export default function Physics({ initColor, bgColor}) {
                 setPenType={setPenType}
                 penSize={penSize}
                 setPenSize={setPenSize}
-            />
-            
-            <PhysicsToolbar gravity={gravity} elasticity={elasticity}
-                            setGravity={setGravity} setElasticity={setElasticity}
-                            timeOut={timeOut} setTimeOut={setTimeOut}/>
-            
-            <FusionToolbar fusionFactor={fusionFactor} setFusionFactor={setFusionFactor} pointCount={pointCount}/>
+                oneStepBack={oneStepBack}
+            />}
+
+            {showToolbars && <PhysicsToolbar 
+                gravity={gravity} elasticity={elasticity}
+                setGravity={setGravity} setElasticity={setElasticity}
+                timeOut={timeOut} setTimeOut={setTimeOut}/>}
+
+            {showToolbars && <FusionToolbar 
+                fusionFactor={fusionFactor} setFusionFactor={setFusionFactor} pointCount={pointCount}/>}
             
 
         </div>
