@@ -411,6 +411,14 @@ export default function Physics({ initColor, bgColor}) {
     const handleToggle = () => {
         setIsToggled(!isToggled);
     }
+    
+    function oneStepBack(){
+        if (points.length > 0){
+            setPoints(prevPoints => prevPoints.slice(0, -1));
+            drawFullCanvasFillColor(fillColor);
+            drawAllPointsOnCanvas();
+        }    
+    }
 
     return (
         <div>
@@ -429,7 +437,8 @@ export default function Physics({ initColor, bgColor}) {
 
             </div>
             
-            <AnimToolbar isToggled={isToggled} handleToggle={handleToggle} reloadInitState={reloadInitState} pointCount={pointCount}/>
+            <AnimToolbar isToggled={isToggled} handleToggle={handleToggle} reloadInitState={reloadInitState} 
+                         pointCount={pointCount} oneStepBack={oneStepBack}/>
 
             <Toolbar
                 handleClearCommand={handleClearCommand}

@@ -4,11 +4,16 @@ import './AnimToolbar.css';
 import repeatIcon from './media/repeat.svg';
 import playIcon from "./media/play.svg";
 import pauseIcon from "./media/pause.svg";
+import backIcon from "./media/backward-step.svg";
 
-function AnimToolbar({ isToggled, handleToggle, reloadInitState, pointCount}) {
+function AnimToolbar({ isToggled, handleToggle, reloadInitState, oneStepBack }) {
 
     return (
         <div className={"anim-container"}>
+            
+            <button className={"tool-button"} onClick={oneStepBack}>
+                <img className={"small-icon"} alt="" src={backIcon}></img>
+            </button>
             
             <button className={"tool-button"} onClick={reloadInitState}>
                 <img className={"small-icon"} alt="" src={repeatIcon}></img>

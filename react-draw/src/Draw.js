@@ -6,6 +6,7 @@ import { useParams } from 'react-router-dom'
 
 import Toolbar from './Toolbar';
 import copyIcon from "./media/share-nodes.svg";
+import CoToolbar from "./CoToolbar";
 
 export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     const [canvasSize, setCanvasSize] = useState({x: null, y: null});
@@ -167,6 +168,9 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
             else if (msg.command === 'fill') {
                 drawFillColor(msg.color);
             }
+            else if (msg.command === 'back') {
+                oneStepBack();
+            }
         }
     }
 
@@ -251,6 +255,27 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
             drawOnCanvas(point.x, point.y, point.color, point.size, point.type, point.xStart, point.yStart);
         });
     }
+    
+    function copyToClipboard() {
+        // get host address from window.location
+        const host = process.env.NODE_ENV === 'production' ? window.location.host : 'localhost:3000';
+        const fullUrl = `${window.location.protocol}//${host}/draw/${uuidParam}`;
+        navigator.clipboard.writeText(fullUrl)
+            .then(() => {
+                setCopySuccess('Copied!');
+                setTimeout(() => setCopySuccess(null), 2000); // remove the message after 2 seconds
+            })
+            .catch(err => {
+                setCopySuccess('Failed to copy!');
+            });
+    }
+
+    function oneStepBack(){
+        if (points.length > 0){
+            setPoints(prevPoints => prevPoints.slice(0, -1));
+            drawFillColor(fillColor);
+        }
+    }
 
     function handleClearCommand() {
         const msg = {
@@ -295,18 +320,11 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         send(JSON.stringify(msg))
     }
 
-    function copyToClipboard() {
-        // get host address from window.location
-        const host = process.env.NODE_ENV === 'production' ? window.location.host : 'localhost:3000';
-        const fullUrl = `${window.location.protocol}//${host}/draw/${uuidParam}`;
-        navigator.clipboard.writeText(fullUrl)
-            .then(() => {
-                setCopySuccess('Copied!');
-                setTimeout(() => setCopySuccess(null), 2000); // remove the message after 2 seconds
-            })
-            .catch(err => {
-                setCopySuccess('Failed to copy!');
-            });
+    function handleStepBack() {
+        const msg = {
+            command: "back"
+        }
+        send(JSON.stringify(msg))
     }
 
     return (
@@ -338,20 +356,11 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
                 setPenSize={setPenSize}
                 copyToClipboard={copyToClipboard}
                 copySuccess={copySuccess}
+                oneStepBack={handleStepBack}
             />
-
-            <div className={"time-container"}>
-                {roundTripTime ? <div>RTT: {roundTripTime} ms</div> : null}
-            </div>
             
-            <div className={"link-container"}>
-                <div className={"link-text-container"}>
-                        {copySuccess ? <div className={"copy-info-tag"}>{copySuccess}</div> : <span>Copy Link:</span>}
-                </div>
-                    <button className={"tool-button"} onClick={copyToClipboard}>
-                        <img className={"small-icon"} alt="" src={copyIcon}></img>
-                    </button>
-                </div>
-            </div>
-            )
-            }
+            <CoToolbar copySuccess={copySuccess} copyToClipboard={copyToClipboard} roundTripTime={roundTripTime} 
+                       saveCanvasToPng={saveCanvasToPng}/>
+        </div>
+    )
+}

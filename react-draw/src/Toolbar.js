@@ -1,15 +1,14 @@
 import React from 'react';
 
-import saveIcon from './media/floppy-disk.svg';
 import clearIcon from './media/trash-can.svg';
 import paintbrushIcon from './media/paintbrush.svg';
 import palette from './media/palette.svg';
 import bucket from './media/bucket.svg';
 
 import './Toolbar.css';
-import Draggable from 'react-draggable';
+import backIcon from './media/backward-step.svg';
 
-function Toolbar({ handleClearCommand, saveCanvasToPng, fillColor, handleSelectedFillColor, selectedColor, setSelectedColor, penType, setPenType, penSize, setPenSize}) {
+function Toolbar({ handleClearCommand, fillColor, handleSelectedFillColor, selectedColor, setSelectedColor, penType, setPenType, penSize, setPenSize, oneStepBack}) {
     
     const toolOptions = ["round", "square", "spray", "line", "eraser"];
     
@@ -20,8 +19,8 @@ function Toolbar({ handleClearCommand, saveCanvasToPng, fillColor, handleSelecte
                         <button className={"tool-button"} type={"button"} onClick={handleClearCommand}>
                             <img className={"small-icon"} alt={"Clear canvas!"} src={clearIcon}></img>
                         </button>
-                        <button className={"tool-button"} type={"button"} value={"\u239A"} onClick={saveCanvasToPng}>
-                            <img className={"small-icon"} alt={"Save canvas"} src={saveIcon}></img>
+                        <button className={"tool-button"} type={"button"} onClick={oneStepBack}>
+                            <img className={"small-icon"} alt={"Save canvas"} src={backIcon}></img>
                         </button>
                     </div>
                     <div className={"tool-item"}>
