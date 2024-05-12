@@ -348,7 +348,14 @@ export default function Physics({ initColor, bgColor}) {
         });
         drawFullCanvasFillColor(fillColor);
     }
-
+    
+    function pointTouchesLine(point, line) {
+        const dx = line.x - line.xStart;
+        const dy = line.y - line.yStart;
+        const distance = Math.abs(dy * point.x - dx * point.y + line.x * line.yStart - line.y * line.xStart) / Math.sqrt(dy * dy + dx * dx);
+        return distance < point.size;
+    }
+    
     function animatePoints() {
         if (!isToggled) {
             return;
@@ -358,7 +365,8 @@ export default function Physics({ initColor, bgColor}) {
             // check collision with objects
             objects.forEach(object => {
                 // if point is inside object, bounce
-                if (point.x > object.xStart && point.x < object.x && point.y > object.yStart && point.y < object.y){
+                const line = {x: object.x, y: object.y, xStart: object.xStart, yStart: object.yStart};
+                if (pointTouchesLine(point, line)){
                     const angle = Math.atan2(point.y - object.y, point.x - object.x);
                     const offset = (point.size + object.size)/2; // You can adjust this value as needed
                     const targetX = object.x + Math.cos(angle) * (point.size + object.size) + offset;
@@ -575,7 +583,6 @@ export default function Physics({ initColor, bgColor}) {
             {showToolbars && <FusionToolbar 
                 fusionFactor={fusionFactor} setFusionFactor={setFusionFactor} pointCount={pointCount}/>}
             
-
         </div>
     )
 }
