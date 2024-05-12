@@ -23,7 +23,9 @@ export default function Physics({ initColor, bgColor}) {
     const ctxRef = useRef(null);
 
     const [points, setPoints] = useState([]);
+    const [objects, setObjects] = useState([]);
     const [initPoints, setInitPoints] = useState([]);
+    const [initObjects, setInitObjects] = useState([]);
     const [isToggled, setIsToggled] = useState(false);
     const [gravity, setGravity] = useState(0.1);
     const [airResistance, setairResistance] = useState(0.0);
@@ -203,21 +205,56 @@ export default function Physics({ initColor, bgColor}) {
         // Special commands
         else if (msg.hasOwnProperty('command')) {
             if (msg.command === 'clear') {
-                setIsToggled(false)
-                setPoints([]);
-                setInitPoints([]);
-                drawFullCanvasFillColor(fillColor);
+                clearResetCanvas();
             }
             else if (msg.command === 'fill') {
                 drawFullCanvasFillColor(msg.color);
             }
+            else if (msg.command === 'init') {
+                reloadInitState();
+            }
         }
+    }
+    
+    function clearResetCanvas() {
+        setIsToggled(false)
+        setPoints([]);
+        setObjects([]);
+        setInitPoints([]);
+        drawFullCanvasFillColor(fillColor);
     }
     
     function addPointsToLists(x, y, color, size, type, speedX, speedY, xStart, yStart) {
         // Add the point to the points array
-        setPoints(prevPoints => [...prevPoints, {x, y, color, size, type, speedX: speedX, speedY: speedY, xStart: xStart, yStart: yStart}]);
-        setInitPoints(prevPoints => [...prevPoints, {x, y, color, size, type, speedX: speedX, speedY: speedY, xStart: xStart, yStart: yStart}]);
+        if (type === 'line') {
+            setObjects(prevPoints => [...prevPoints, {x, y, color, size, type, speedX: speedX, speedY: speedY, xStart: xStart, yStart: yStart}]);
+            setInitObjects(prevPoints => [...prevPoints, {x, y, color, size, type, speedX: speedX, speedY: speedY, xStart: xStart, yStart: yStart}]);
+            
+        }
+        else {
+            setPoints(prevPoints => [...prevPoints, {
+                x,
+                y,
+                color,
+                size,
+                type,
+                speedX: speedX,
+                speedY: speedY,
+                xStart: xStart,
+                yStart: yStart
+            }]);
+            setInitPoints(prevPoints => [...prevPoints, {
+                x,
+                y,
+                color,
+                size,
+                type,
+                speedX: speedX,
+                speedY: speedY,
+                xStart: xStart,
+                yStart: yStart
+            }]);
+        }
     }
     
     
@@ -304,13 +341,12 @@ export default function Physics({ initColor, bgColor}) {
     }
     
     function reloadInitState() {
+        setIsToggled(false)
         setPoints([]);
         initPoints.forEach(point => {
             setPoints(prevPoints => [...prevPoints, JSON.parse(JSON.stringify(point))]);
         });
         drawFullCanvasFillColor(fillColor);
-        drawAllPointsOnCanvas();
-        setIsToggled(false);
     }
 
     function animatePoints() {
@@ -318,6 +354,22 @@ export default function Physics({ initColor, bgColor}) {
             return;
         }
         points.forEach(point => {
+            
+            // check collision with objects
+            objects.forEach(object => {
+                // if point is inside object, bounce
+                if (point.x > object.xStart && point.x < object.x && point.y > object.yStart && point.y < object.y){
+                    const angle = Math.atan2(point.y - object.y, point.x - object.x);
+                    const offset = (point.size + object.size)/2; // You can adjust this value as needed
+                    const targetX = object.x + Math.cos(angle) * (point.size + object.size) + offset;
+                    const targetY = object.y + Math.sin(angle) * (point.size + object.size) + offset;
+                    const ax = (targetX - point.x) * elasticity/20;
+                    const ay = (targetY - point.y) * elasticity/10;
+                    point.speedX -= ax;
+                    point.speedY -= ay;
+                    point.color = object.color;
+                }
+            });
 
             // Apply gravity
             point.speedY += gravity;
@@ -352,7 +404,7 @@ export default function Physics({ initColor, bgColor}) {
                     const dy = point.y - otherPoint.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     if (distance < point.size + otherPoint.size) {
-                        // if speed of both points larger than 10 then combine both points into one point
+                        // if speed of both points larger than _ then combine both points into one point
                         if (Math.abs(point.speedX) + Math.abs(otherPoint.speedX) > FUSION_LEVEL || Math.abs(point.speedY) + Math.abs(otherPoint.speedY) > FUSION_LEVEL){
                             point.x = (point.x + otherPoint.x) / 2;
                             point.y = (point.y + otherPoint.y) / 2;
@@ -380,10 +432,11 @@ export default function Physics({ initColor, bgColor}) {
                         }
                         else{
                             const angle = Math.atan2(dy, dx);
-                            const targetX = otherPoint.x + Math.cos(angle) * (point.size + otherPoint.size);
-                            const targetY = otherPoint.y + Math.sin(angle) * (point.size + otherPoint.size);
-                            const ax = (targetX - point.x) * 0.1;
-                            const ay = (targetY - point.y) * 0.1;
+                            const offset = (point.size + otherPoint.size)/2; // You can adjust this value as needed
+                            const targetX = otherPoint.x + Math.cos(angle) * (point.size + otherPoint.size) + offset;
+                            const targetY = otherPoint.y + Math.sin(angle) * (point.size + otherPoint.size) + offset;
+                            const ax = (targetX - point.x) * elasticity/10;
+                            const ay = (targetY - point.y) * elasticity/10;
                             point.speedX -= ax;
                             point.speedY -= ay;
                             otherPoint.speedX += ax;
@@ -407,16 +460,16 @@ export default function Physics({ initColor, bgColor}) {
             
             
         });
-        pointsToRemove();
+        //pointsToRemove();
         drawAllPointsOnCanvas()
     }
     
-    function pointsToRemove() {
-        removePoints.forEach(point => {
-            setPoints(prevPoints => prevPoints.filter(p => p !== point));
-        });
-        setRemovePoints([]);
-    }
+    // function pointsToRemove() {
+    //     removePoints.forEach(point => {
+    //         setPoints(prevPoints => prevPoints.filter(p => p !== point));
+    //     });
+    //     setRemovePoints([]);
+    // }
     
     
     function drawAllPointsOnCanvas() {
@@ -435,12 +488,22 @@ export default function Physics({ initColor, bgColor}) {
                 ctx.beginPath();
                 ctx.arc(point.x, point.y, point.size, 0, 2 * Math.PI);
                 ctx.fill();
-            }
-            else if (point.type === 'square') {
+            } else if (point.type === 'square') {
                 ctx.fillStyle = point.color;
-                ctx.fillRect(point.x-point.size, point.y-penSize, point.size*2, point.size*2);
+                ctx.fillRect(point.x - point.size, point.y - penSize, point.size * 2, point.size * 2);
+            } else if (point.type === 'spray') {
+                drawRoundSprayOnCanvas(point.ctx, point.x, point.y, point.color, point.size, point.type);
             }
-
+        });
+        objects.forEach(point => {
+            if (point.type === 'line') {
+                ctx.beginPath();
+                ctx.moveTo(point.xStart, point.yStart-CANVAS_CORRECTION_Y_PIXELS);
+                ctx.lineTo(point.x, point.y-CANVAS_CORRECTION_Y_PIXELS);
+                ctx.strokeStyle = point.color;
+                ctx.lineWidth = point.size;
+                ctx.stroke();
+            }
         });
         
     }
@@ -461,6 +524,13 @@ export default function Physics({ initColor, bgColor}) {
         setShowToolbars(!showToolbars);
     }
     
+    function handleReloadInitState(){
+        const msg = {
+            command: "init",
+        }
+        processCommand(msg)
+    }
+    
     return (
         <div>
 
@@ -479,7 +549,7 @@ export default function Physics({ initColor, bgColor}) {
             </div>
             
             <AnimToolbar 
-                isToggled={isToggled} handleToggle={handleToggle} reloadInitState={reloadInitState} 
+                isToggled={isToggled} handleToggle={handleToggle} reloadInitState={handleReloadInitState} 
                 pointCount={pointCount} oneStepBack={oneStepBack} 
                 showToolbars={showToolbars} handleShowToolbar={handleShowToolbars}/>
 
