@@ -1,10 +1,10 @@
 import React, {useEffect, useState, useRef} from 'react';
 import './Physics.css';
 
-import Toolbar from './Toolbar';
+import PhysicsToolbar from './PhysicsToolbar';
 
-import PhysicsToolbar from "./PhysicsToolbar";
-import AnimToolbar from "./AnimToolbar";
+import PhysicsExtraToolbar from "./PhysicsExtraToolbar";
+import PhysicsMenuToolbar from "./PhysicsMenuToolbar";
 import FusionToolbar from "./FusionToolbar";
 import {send} from "./websocket";
 
@@ -194,16 +194,8 @@ export default function Physics({ initColor, bgColor}) {
 
     function processCommand(msg) {
         console.log("Message: ", msg);
-        // Basic drawing
-        if (msg.hasOwnProperty('color') && msg.hasOwnProperty('size') && msg.hasOwnProperty('type')){
-            if (isToggled) {
-                return
-            }
-            drawOnCanvas(msg.x, msg.y, msg.color, msg.size, msg.type, msg.xStart, msg.yStart);
-            addPointsToLists(msg.x, msg.y, msg.color, msg.size, msg.type, msg.speedX, msg.speedY, msg.xStart, msg.yStart);
-        }
         // Special commands
-        else if (msg.hasOwnProperty('command')) {
+        if (msg.hasOwnProperty('command')) {
             if (msg.command === 'clear') {
                 clearResetCanvas();
             }
@@ -213,6 +205,14 @@ export default function Physics({ initColor, bgColor}) {
             else if (msg.command === 'init') {
                 reloadInitState();
             }
+        }
+        // Basic drawing
+        else {
+            if (isToggled) {
+                return
+            }
+            drawOnCanvas(msg.x, msg.y, msg.color, msg.size, msg.type, msg.xStart, msg.yStart);
+            addPointsToLists(msg.x, msg.y, msg.color, msg.size, msg.type, msg.speedX, msg.speedY, msg.xStart, msg.yStart);
         }
     }
     
@@ -586,15 +586,14 @@ export default function Physics({ initColor, bgColor}) {
 
                 <canvas ref={canvasRef} width={canvasSize.x} height={canvasSize.y}
                         style={{width: '100%', height: '100%'}}/>
-
             </div>
             
-            <AnimToolbar 
+            <PhysicsMenuToolbar 
                 isToggled={isToggled} handleToggle={handleToggle} reloadInitState={handleReloadInitState} 
                 pointCount={pointCount} oneStepBack={oneStepBack} 
-                showToolbars={showToolbars} handleShowToolbar={handleShowToolbars}/>
+                showToolbars={showToolbars} handleShowToolbar={handleShowToolbars} handleClearCommand={handleClearCommand}/>
 
-            {showToolbars && <Toolbar
+            {showToolbars && <PhysicsToolbar
                 handleClearCommand={handleClearCommand}
                 saveCanvasToPng={saveCanvasToPng}
                 fillColor={fillColor}
@@ -608,7 +607,7 @@ export default function Physics({ initColor, bgColor}) {
                 oneStepBack={oneStepBack}
             />}
 
-            {showToolbars && <PhysicsToolbar 
+            {showToolbars && <PhysicsExtraToolbar 
                 gravity={gravity} elasticity={elasticity}
                 setGravity={setGravity} setElasticity={setElasticity}
                 timeOut={timeOut} setTimeOut={setTimeOut}/>}

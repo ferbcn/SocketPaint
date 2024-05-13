@@ -1,7 +1,7 @@
 .codraw-container{
     position: absolute;
     top: 15px;
-    left: 60%;
+    left: 5%;
     display: flex;
     flex-direction: row;
     justify-content: flex-start;

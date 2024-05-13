@@ -1,27 +1,53 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React from 'react';
+
+import clearIcon from './media/trash-can.svg';
+import paintbrushIcon from './media/paintbrush.svg';
+import palette from './media/palette.svg';
+import bucket from './media/bucket.svg';
+
 import './PhysicsToolbar.css';
+import backIcon from './media/backward-step.svg';
 
-function PhysicsToolbar({ gravity, elasticity, setGravity, setElasticity, timeOut, setTimeOut }) {
-
+function PhysicsToolbar({ handleClearCommand, fillColor, handleSelectedFillColor, selectedColor, setSelectedColor, 
+                            penType, setPenType, penSize, setPenSize, oneStepBack}) {
+    
+    const toolOptions = ["round", "line", "rect"];
+    
     return (
-        <div className={"phy-toolbar"}>
-            <div className={"range-container"} >
-                <input type={"range"} min={0.1} max={1.0} step={0.1} value={gravity}
-                       onChange={e => setGravity(parseFloat(e.target.value))}/>
-                <div className="input-size">Gravity: {gravity}</div>
-            </div>
-            <div className={"range-container"}>
-                <input type={"range"} min={0.5} max={1.5} step={0.01} value={elasticity}
-                       onChange={e => setElasticity(e.target.value)}/>
-                <div className="input-size">Elasticity: {elasticity}</div>
-            </div>
-            <div className={"range-container"}>
-                    <input type={"range"} min={1} max={100} step={1} value={timeOut}
-                           onChange={e => setTimeOut(e.target.value)}/>
-                    <div className="input-size">Delay: {timeOut}</div>
+        <div>
+                <div className={"tool-button-container"}>
+
+                    <div className={"tool-item"}>
+                        <img alt="" src={bucket} className={"icon-white"}/>
+                        <input type={"color"} value={fillColor}
+                               onChange={e => handleSelectedFillColor(e.target.value)}/>
+                    </div>
+                    <div className={"tool-item"}>
+                        <span>
+                            <img alt="" src={palette} className={"icon-white"}/>
+                            <input type={"color"} value={selectedColor}
+                                   onChange={e => setSelectedColor(e.target.value)}/>
+                        </span>
+                        <span>
+                            <img alt="" src={paintbrushIcon} className={"icon-white"}/>
+                            <select value={penType} onChange={e => {
+                                setPenType(e.target.value);
+                                }}>
+                                {toolOptions.map((option, index) => (
+                                    <option key={index} value={option}>{option}</option>
+                                ))}
+                            </select>
+                        </span>
+                    </div>
+                    <div className={"tool-item"}>
+                        <input type={"range"} min={1} max={50} value={penSize}
+                               onChange={e => setPenSize(parseInt(e.target.value))}/>
+                        <div className="input-size">Size: {penSize}</div>
+                    </div>
+                    
                 </div>
-            </div>
-);
+        </div>
+    );
 }
 
 export default PhysicsToolbar;

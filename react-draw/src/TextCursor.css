@@ -1,0 +1,33 @@
+.text-content{
+    position: absolute;
+    font-weight: bold;
+    font-size: 1.5em;
+    color: black;
+}
+
+.text-cursor{
+    position: absolute;
+    font-weight: bold;
+    font-size: 1.5em;
+    color: black;
+    animation: blink 1s infinite;
+}
+
+/* blinking animation */
+@keyframes blink {
+    0% {
+        opacity: 1;
+    }
+    40% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0;
+    }
+    90% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}

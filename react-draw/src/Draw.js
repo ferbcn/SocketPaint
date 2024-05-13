@@ -4,9 +4,9 @@ import './Draw.css';
 import {registerOnMessageCallback, send, startWebsocketConnection} from "./websocket";
 import { useParams } from 'react-router-dom'
 
-import Toolbar from './Toolbar';
-import copyIcon from "./media/share-nodes.svg";
-import CoToolbar from "./CoToolbar";
+import DrawMenuToolbar from "./DrawMenuToolbar";
+import TextCursor from "./TextCursor";
+import DrawToolbar from "./DrawToolbar";
 
 export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     const [canvasSize, setCanvasSize] = useState({x: null, y: null});
@@ -26,7 +26,40 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     const [points, setPoints] = useState([]);
     const [startPoint, setStartPoint] = useState({x: 0, y: 0});
     
+    const [textCursorActive, setTextCursorActive] = useState(false);
+    const [textContent, setTextContent] = useState('');
+    
     useEffect(() => {
+        
+        function handleTextInput(e) {
+            // handle textInput
+            console.log("Key pressed: ", e.key);
+            if (e.key === 'Escape') {
+                setTextCursorActive(false);
+            }
+            else {
+                const msg = {
+                    xStart: startPoint.x,
+                    yStart: startPoint.y,
+                    x: coords.x,
+                    y: coords.y,
+                    color: selectedColor,
+                    size: penSize,
+                    type: penType,
+                    uuid: uuidParam,
+                    text: e.key
+                }
+                send(JSON.stringify(msg))
+            }
+        }
+        
+        if (textCursorActive) {
+            // set up event listener for window resize
+            window.addEventListener('keydown', handleTextInput);
+        }
+        else {
+            window.removeEventListener('keydown', handleTextInput);
+        }
 
         // prevent scrolling on touch devices
         document.body.addEventListener('touchmove', function(e) {
@@ -74,11 +107,11 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
             clearInterval(rttInterval);
         };
 
-    }, [uuidParam]); // Added uuidParam to the dependency array
+    }, [uuidParam, textCursorActive, textContent]); // Added uuidParam to the dependency array
     
     const handleMouseDown = event => {
         setMouseDown(true)
-        if (penType === 'line') {
+        if (penType === 'line' || penType === 'rectangle' || penType === 'fill-rect') {
             setStartPoint({
                 x: event.clientX,
                 y: event.clientY,
@@ -89,8 +122,10 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         }
     };
     const handleMouseUp = event => {
-        if (penType === 'line' && mouseDown) {
-            sendGeo()
+        if (mouseDown) {
+            if (penType === 'line' || penType === 'rectangle' || penType === 'fill-rect') {
+                sendPixel()
+            }
         }
         setMouseDown(false)
     };
@@ -100,14 +135,15 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
             x: event.clientX,
             y: event.clientY,
         });
-        if (penType !== 'line') {
-            if (mouseDown) {
-                sendPixel()
-            }
+        if (penType === 'line' || penType === 'rectangle' || penType === 'fill-rect') {
+            return;
+        }
+        if (mouseDown) {
+            sendPixel()
         }
     };
-    
-    function sendGeo() {
+        
+    function sendPixel() {
         const msg = {
             xStart: startPoint.x,
             yStart: startPoint.y,
@@ -116,19 +152,7 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
             color: selectedColor,
             size: penSize,
             type: penType,
-            uuid: uuidParam
-        }
-        send(JSON.stringify(msg))
-    }
-    
-    function sendPixel() {
-        const msg = {
-            x: coords.x,
-            y: coords.y,
-            color: selectedColor,
-            size: penSize,
-            type: penType,
-            uuid: uuidParam
+            uuid: uuidParam,
         }
         send(JSON.stringify(msg))
     }
@@ -144,16 +168,11 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     function onMessageReceived(msg) {
         msg = JSON.parse(msg);
         // Basic drawing
-        if (msg.hasOwnProperty('color') && msg.hasOwnProperty('size') && msg.hasOwnProperty('type')){
-            drawOnCanvas(msg.x, msg.y, msg.color, msg.size, msg.type, msg.xStart, msg.yStart);
-            const x = msg.x;
-            const y = msg.y;
-            const color = msg.color;
-            const size = msg.size;
-            const type = msg.type;
-            const xStart = msg.xStart;
-            const yStart = msg.yStart;
-            setPoints(prevPoints => [...prevPoints, {x, y, color, size, type, xStart, yStart}]);
+        if (msg.hasOwnProperty('text')) {
+            setTextContent(textContent + msg.text);
+        }
+        if (msg.hasOwnProperty('type') && msg.type === 'text') {
+            setTextCursorActive(true);
         }
         // Special commands
         else if (msg.hasOwnProperty('command')) {
@@ -161,15 +180,19 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
                 clearCanvas();
             }
             if (msg.command === 'rtt') {
-                let rtt = 0 + Date.now() - msg.time;
+                let rtt = Date.now() - msg.time;
                 setRoundTripTime(rtt);
-            }
-            else if (msg.command === 'fill') {
+            } else if (msg.command === 'fill') {
                 drawFillColor(msg.color);
-            }
-            else if (msg.command === 'back') {
+            } else if (msg.command === 'back') {
                 oneStepBack();
             }
+        }
+        else {
+            drawOnCanvas(msg.x, msg.y, msg.color, msg.size, msg.type, msg.xStart, msg.yStart);
+            setPoints(prevPoints => [...prevPoints, {
+                x: msg.x, y: msg.y, color: msg.color, size: msg.size, type: msg.type, 
+                xStart: msg.xStart, yStart: msg.yStart}])
         }
     }
 
@@ -191,7 +214,7 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
             ctx.fillRect(x-size/2, y-penSize/2-SCREEN_CORR_FACTOR, size, size);
         }
         else if (type === 'spray') {
-            drwaRoundSprayOnCanvas(ctx, x, y, color, size);
+            drawRoundSprayOnCanvas(ctx, x, y, color, size);
         }
         else if (type === 'line') {
             ctx.beginPath();
@@ -201,9 +224,27 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
             ctx.lineWidth = size;
             ctx.stroke();
         }
+        else if (type === 'rectangle') {
+            const xDist = Math.abs(x - xStart)
+            const yDist = Math.abs(y - yStart)
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = size;
+            if (xStart < x && yStart < y) {
+                ctx.rect(xStart, yStart - SCREEN_CORR_FACTOR, xDist, yDist);
+                ctx.stroke();
+            }
+        }
+        else if (type === 'fill-rect') {
+            const xDist = Math.abs(x - xStart)
+            const yDist = Math.abs(y - yStart)
+            if (xStart < x && yStart < y) {
+                ctx.fillRect(xStart, yStart - SCREEN_CORR_FACTOR, xDist, yDist);
+            }
+        }
     }
     
-    function drwaRoundSprayOnCanvas(ctx, x, y, color, size) {
+    function drawRoundSprayOnCanvas(ctx, x, y, color, size) {
         ctx.save(); // Save the current state
         ctx.beginPath();
         ctx.arc(x, y-SCREEN_CORR_FACTOR, size, 0, 2 * Math.PI);
@@ -232,6 +273,7 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         setPoints([]);
     }
+    
     function saveCanvasToPng() {
         const canvas = canvasRef.current;
         const link = document.createElement('a');
@@ -297,7 +339,6 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
                 x: touch.clientX,
                 y: touch.clientY,
             });
-            
         }
     }
     
@@ -325,7 +366,11 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         }
         send(JSON.stringify(msg))
     }
-
+    
+    function handleTextCursor(){
+        setTextCursorActive(!textCursorActive);
+    }
+    
     return (
         <div>
             <div className={"container-draw"}
@@ -342,7 +387,7 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
 
             </div>
 
-            <Toolbar
+            <DrawToolbar
                 handleClearCommand={handleClearCommand}
                 saveCanvasToPng={saveCanvasToPng}
                 fillColor={fillColor}
@@ -357,9 +402,13 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
                 copySuccess={copySuccess}
                 oneStepBack={handleStepBack}
             />
-            
-            <CoToolbar copySuccess={copySuccess} copyToClipboard={copyToClipboard} roundTripTime={roundTripTime} 
-                       saveCanvasToPng={saveCanvasToPng}/>
+                        
+            <DrawMenuToolbar copySuccess={copySuccess} copyToClipboard={copyToClipboard} roundTripTime={roundTripTime}
+                             saveCanvasToPng={saveCanvasToPng} handleClearCommand={handleClearCommand} oneStepBack={oneStepBack}/>
+
+            {textCursorActive ? 
+                <TextCursor x={coords.x-5} y={coords.y-penSize*2} color={selectedColor} size={penSize} textContent={textContent}/> : null}
+        
         </div>
     )
 }
