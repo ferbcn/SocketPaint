@@ -168,7 +168,7 @@ export default function Physics({ initColor, bgColor}) {
             size: penSize,
             type: penType,
             speedY: 0.0,
-            speedX: getRandom(-10, 10)
+            speedX: 0.0 //getRandom(-10, 10)
         }
         processCommand(msg)
     }
@@ -336,6 +336,10 @@ export default function Physics({ initColor, bgColor}) {
         points.forEach(point => {
             drawOnCanvas(point.x, point.y, point.color, point.size, point.type );
         });
+        // draw objects 
+        objects.forEach(object => {
+            drawOnCanvas(object.x, object.y, object.color, object.size, object.type, object.xStart, object.yStart);
+        });
         setIsToggled(false);
         
     }
@@ -348,12 +352,36 @@ export default function Physics({ initColor, bgColor}) {
         });
         drawFullCanvasFillColor(fillColor);
     }
-    
+
     function pointTouchesLine(point, line) {
         const dx = line.x - line.xStart;
         const dy = line.y - line.yStart;
-        const distance = Math.abs(dy * point.x - dx * point.y + line.x * line.yStart - line.y * line.xStart) / Math.sqrt(dy * dy + dx * dx);
-        return distance < point.size;
+        // const distance = Math.abs(dy * point.x - dx * point.y + line.x * line.yStart - line.y * line.xStart) / Math.sqrt(dy * dy + dx * dx);
+
+        // Check if the point is within the bounds of the line segment
+        const dot = (point.x - line.xStart) * (line.x - line.xStart) + (point.y - line.yStart) * (line.y - line.yStart);
+        const len_sq = dx * dx + dy * dy;
+        const param = dot / len_sq;
+
+        let xx, yy;
+
+        if (param < 0 || (line.x === line.xStart && line.y === line.yStart)) {
+            xx = line.xStart;
+            yy = line.yStart;
+        }
+        else if (param > 1) {
+            xx = line.x;
+            yy = line.y;
+        }
+        else {
+            xx = line.xStart + param * dx;
+            yy = line.yStart + param * dy;
+        }
+
+        const dx1 = point.x - xx;
+        const dy1 = point.y - yy;
+
+        return Math.sqrt(dx1 * dx1 + dy1 * dy1) < point.size;
     }
     
     function animatePoints() {
@@ -367,14 +395,19 @@ export default function Physics({ initColor, bgColor}) {
                 // if point is inside object, bounce
                 const line = {x: object.x, y: object.y, xStart: object.xStart, yStart: object.yStart};
                 if (pointTouchesLine(point, line)){
-                    const angle = Math.atan2(point.y - object.y, point.x - object.x);
-                    const offset = (point.size + object.size)/2; // You can adjust this value as needed
-                    const targetX = object.x + Math.cos(angle) * (point.size + object.size) + offset;
-                    const targetY = object.y + Math.sin(angle) * (point.size + object.size) + offset;
+                    const pointTrajectoryAngle = Math.atan2(point.speedY, point.speedX);
+                    const lineAngle = Math.atan2(line.y - line.yStart, line.x - line.xStart);
+                    // const angle = Math.atan2(point.y - object.y, point.x - object.x);
+                    const angle = lineAngle + pointTrajectoryAngle;
+                    // console.log("angle: ", angle, "lineAngle: ", lineAngle, "pointTrajectoryAngle: ", pointTrajectoryAngle);
+                    // const angle = pointTrajectoryAngle; 
+                    const offset = (point.size + object.size)/1; // You can adjust this value as needed
+                    const targetX = point.x + Math.cos(angle) * (point.size + object.size) + offset;
+                    const targetY = point.y + Math.sin(angle) * (point.size + object.size) + offset;
                     const ax = (targetX - point.x) * elasticity/20;
-                    const ay = (targetY - point.y) * elasticity/10;
-                    point.speedX -= ax;
-                    point.speedY -= ay;
+                    const ay = (targetY - point.y) * elasticity/20;
+                    point.speedX *= -ax;
+                    point.speedY *= -ay;
                     point.color = object.color;
                 }
             });
