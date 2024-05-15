@@ -30,31 +30,8 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     const [textContent, setTextContent] = useState('');
     
     useEffect(() => {
-        
-        function handleTextInput(e) {
-            // handle textInput
-            console.log("Key pressed: ", e.key);
-            if (e.key === 'Escape') {
-                setTextCursorActive(false);
-            }
-            else {
-                const msg = {
-                    xStart: startPoint.x,
-                    yStart: startPoint.y,
-                    x: coords.x,
-                    y: coords.y,
-                    color: selectedColor,
-                    size: penSize,
-                    type: penType,
-                    uuid: uuidParam,
-                    text: e.key
-                }
-                send(JSON.stringify(msg))
-            }
-        }
-        
+                
         if (textCursorActive) {
-            // set up event listener for window resize
             window.addEventListener('keydown', handleTextInput);
         }
         else {
@@ -68,30 +45,6 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
 
         startWebsocketConnection({endpoint: 'wschat', uuid: uuidParam});
         
-        // handle window resize
-        const handleResize = () => {
-            const canvas = canvasRef.current;
-            const ctx = canvas.getContext('2d');
-
-            // Save current image data
-            const imageData = canvas.toDataURL();
-
-            // Resize the canvas
-            setCanvasSize({
-                x: window.innerWidth,
-                y: window.innerHeight
-            });
-
-            // Create a new image and set its source to the saved image data
-            const img = new Image();
-            img.src = imageData;
-
-            // When the image loads, draw it on the resized canvas
-            img.onload = function() {
-                ctx.drawImage(img, 0, 0);
-            };
-        };
-
         // call handleResize immediately to set initial size
         handleResize();
 
@@ -107,8 +60,67 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
             clearInterval(rttInterval);
         };
 
-    }, [uuidParam, textCursorActive, textContent]); // Added uuidParam to the dependency array
+    }, [uuidParam, textCursorActive ]); // Added uuidParam to the dependency array
+
     
+    // handle text input in text mode
+    function handleTextInput(e) {
+        //console.log("Key pressed: ", e.key);
+        let key = e.key;
+        let msg = {
+            xStart: startPoint.x,
+            yStart: startPoint.y,
+            x: coords.x,
+            y: coords.y,
+            color: selectedColor,
+            size: penSize,
+            type: penType,
+            uuid: uuidParam,
+            text: key
+        }
+
+        if (key === 'Escape') {
+            setTextCursorActive(false);
+            setTextContent('');
+            // sendEscapeCommand();
+        }
+        else if (key === 'Enter') {
+            msg.text = "\n";
+            send(JSON.stringify(msg))
+        }
+        else if (key === 'Backspace'){
+            //sendBackSpaceCommand();
+        }
+        else if (/^[a-zA-Z]$/.test(key)) { // Check if text is a single character
+            msg.text = key;
+            send(JSON.stringify(msg))
+        }
+    }
+
+    // handle window resize
+    const handleResize = () => {
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+
+        // Save current image data
+        const imageData = canvas.toDataURL();
+
+        // Resize the canvas
+        setCanvasSize({
+            x: window.innerWidth,
+            y: window.innerHeight
+        });
+
+        // Create a new image and set its source to the saved image data
+        const img = new Image();
+        img.src = imageData;
+
+        // When the image loads, draw it on the resized canvas
+        img.onload = function() {
+            ctx.drawImage(img, 0, 0);
+        };
+    };
+
     const handleMouseDown = event => {
         setMouseDown(true)
         if (penType === 'line' || penType === 'rectangle' || penType === 'fill-rect') {
@@ -167,12 +179,13 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     
     function onMessageReceived(msg) {
         msg = JSON.parse(msg);
+        console.log("Received message: ", msg);
         // Basic drawing
         if (msg.hasOwnProperty('text')) {
             setTextContent(textContent + msg.text);
         }
         if (msg.hasOwnProperty('type') && msg.type === 'text') {
-            setTextCursorActive(true);
+            if (!textCursorActive) setTextCursorActive(true);
         }
         // Special commands
         else if (msg.hasOwnProperty('command')) {
@@ -407,7 +420,7 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
                              saveCanvasToPng={saveCanvasToPng} handleClearCommand={handleClearCommand} oneStepBack={oneStepBack}/>
 
             {textCursorActive ? 
-                <TextCursor x={coords.x-5} y={coords.y-penSize*2} color={selectedColor} size={penSize} textContent={textContent}/> : null}
+                <TextCursor x={coords.x-5+textContent.length} y={coords.y-penSize*2} color={selectedColor} size={penSize} textContent={textContent}/> : null}
         
         </div>
     )

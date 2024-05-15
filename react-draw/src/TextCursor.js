@@ -12,7 +12,7 @@ function TextCursor({ x, y, color, size, textContent }) {
         document.getElementById("text-content").style.left = x + "px";
         document.getElementById("text-content").style.top = y + "px";
         document.getElementById("text-content").style.fontSize = size + "px";
-    }, []);
+    }, [size]);
 
     return (
         <div>
