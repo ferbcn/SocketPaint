@@ -36,7 +36,7 @@ public class WebSocketController : Controller
     
     public async Task Echo(WebSocket webSocket, String uuid)
     {
-        var buffer = new byte[128];
+        var buffer = new byte[256];
         WebSocketReceiveResult receiveResult;
         
         do

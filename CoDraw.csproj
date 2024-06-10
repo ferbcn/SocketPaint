@@ -4,6 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
@@ -43,18 +44,22 @@
       <None Include="wwwroot\logo192.png" />
       <None Include="wwwroot\logo512.png" />
       <None Include="wwwroot\robots.txt" />
-      <None Include="wwwroot\static\css\main.0a51cf9c.css" />
-      <None Include="wwwroot\static\css\main.0a51cf9c.css.map" />
+      <None Include="wwwroot\static\css\main.bd6a114d.css" />
+      <None Include="wwwroot\static\css\main.bd6a114d.css.map" />
       <None Include="wwwroot\static\js\453.f9d3e484.chunk.js" />
       <None Include="wwwroot\static\js\453.f9d3e484.chunk.js.map" />
-      <None Include="wwwroot\static\js\main.18ee0cee.js" />
-      <None Include="wwwroot\static\js\main.18ee0cee.js.LICENSE.txt" />
-      <None Include="wwwroot\static\js\main.18ee0cee.js.map" />
+      <None Include="wwwroot\static\js\main.a81ab3cc.js" />
+      <None Include="wwwroot\static\js\main.a81ab3cc.js.LICENSE.txt" />
+      <None Include="wwwroot\static\js\main.a81ab3cc.js.map" />
+      <None Include="wwwroot\static\media\backward-step.109c39fa8ad4ab8d360c31b71f2c67be.svg" />
       <None Include="wwwroot\static\media\bucket.a243f1cdbb26e39eeba9e94d38515951.svg" />
       <None Include="wwwroot\static\media\floppy-disk.61a16af3b883b2f758e88749161ffa47.svg" />
       <None Include="wwwroot\static\media\logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg" />
+      <None Include="wwwroot\static\media\minimize.56dc38db6439878f4e868ea5adbf81ed.svg" />
       <None Include="wwwroot\static\media\paintbrush.6e75a15a3c625e443e01f2cc760213bd.svg" />
       <None Include="wwwroot\static\media\palette.2035d45a6625490013397a3f0345e354.svg" />
+      <None Include="wwwroot\static\media\pause.2878241613a063dacf1267fe762853c1.svg" />
+      <None Include="wwwroot\static\media\play.3e024ee2416fd0bf21676344694b8133.svg" />
       <None Include="wwwroot\static\media\repeat.81343e8d5566a0352c4031cd7f628b99.svg" />
       <None Include="wwwroot\static\media\share-nodes.98fd1d287bd9370fe4b9ef930ce093c6.svg" />
       <None Include="wwwroot\static\media\trash-can.5c606ba144ffb01a9b17d740b5aa56ce.svg" />

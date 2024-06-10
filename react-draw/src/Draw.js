@@ -4,8 +4,9 @@ import './Draw.css';
 import {registerOnMessageCallback, send, startWebsocketConnection} from "./websocket";
 import { useParams } from 'react-router-dom'
 
-import Toolbar from './Toolbar';
-import copyIcon from "./media/share-nodes.svg";
+import DrawMenuToolbar from "./DrawMenuToolbar";
+import TextCursor from "./TextCursor";
+import DrawToolbar from "./DrawToolbar";
 
 export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     const [canvasSize, setCanvasSize] = useState({x: null, y: null});
@@ -20,8 +21,22 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     const { uuidParam } = useParams()
     const [copySuccess, setCopySuccess] = useState('');
     const [roundTripTime, setRoundTripTime] = useState(0);
-
+    
+    const SCREEN_CORR_FACTOR = 0;
+    const [points, setPoints] = useState([]);
+    const [startPoint, setStartPoint] = useState({x: 0, y: 0});
+    
+    const [textCursorActive, setTextCursorActive] = useState(false);
+    const [textContent, setTextContent] = useState('');
+    
     useEffect(() => {
+                
+        if (textCursorActive) {
+            window.addEventListener('keydown', handleTextInput);
+        }
+        else {
+            window.removeEventListener('keydown', handleTextInput);
+        }
 
         // prevent scrolling on touch devices
         document.body.addEventListener('touchmove', function(e) {
@@ -30,30 +45,6 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
 
         startWebsocketConnection({endpoint: 'wschat', uuid: uuidParam});
         
-        // handle window resize
-        const handleResize = () => {
-            const canvas = canvasRef.current;
-            const ctx = canvas.getContext('2d');
-
-            // Save current image data
-            const imageData = canvas.toDataURL();
-
-            // Resize the canvas
-            setCanvasSize({
-                x: window.innerWidth,
-                y: window.innerHeight - 120
-            });
-
-            // Create a new image and set its source to the saved image data
-            const img = new Image();
-            img.src = imageData;
-
-            // When the image loads, draw it on the resized canvas
-            img.onload = function() {
-                ctx.drawImage(img, 0, 0);
-            };
-        };
-
         // call handleResize immediately to set initial size
         handleResize();
 
@@ -66,15 +57,88 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         // clean up event listener on unmount
         return () => {
             window.removeEventListener('resize', handleResize);
+            clearInterval(rttInterval);
         };
 
-    }, [uuidParam]); // Added uuidParam to the dependency array
+    }, [uuidParam, textCursorActive ]); // Added uuidParam to the dependency array
+
+    
+    // handle text input in text mode
+    function handleTextInput(e) {
+        //console.log("Key pressed: ", e.key);
+        let key = e.key;
+        let msg = {
+            xStart: startPoint.x,
+            yStart: startPoint.y,
+            x: coords.x,
+            y: coords.y,
+            color: selectedColor,
+            size: penSize,
+            type: penType,
+            uuid: uuidParam,
+            text: key
+        }
+
+        if (key === 'Escape') {
+            setTextCursorActive(false);
+            setTextContent('');
+            // sendEscapeCommand();
+        }
+        else if (key === 'Enter') {
+            msg.text = "\n";
+            send(JSON.stringify(msg))
+        }
+        else if (key === 'Backspace'){
+            //sendBackSpaceCommand();
+        }
+        else if (/^[a-zA-Z]$/.test(key)) { // Check if text is a single character
+            msg.text = key;
+            send(JSON.stringify(msg))
+        }
+    }
+
+    // handle window resize
+    const handleResize = () => {
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+
+        // Save current image data
+        const imageData = canvas.toDataURL();
+
+        // Resize the canvas
+        setCanvasSize({
+            x: window.innerWidth,
+            y: window.innerHeight
+        });
+
+        // Create a new image and set its source to the saved image data
+        const img = new Image();
+        img.src = imageData;
+
+        // When the image loads, draw it on the resized canvas
+        img.onload = function() {
+            ctx.drawImage(img, 0, 0);
+        };
+    };
 
     const handleMouseDown = event => {
         setMouseDown(true)
-        sendPixel()
+        if (penType === 'line' || penType === 'rectangle' || penType === 'fill-rect') {
+            setStartPoint({
+                x: event.clientX,
+                y: event.clientY,
+            });
+        }
+        else{
+            sendPixel()
+        }
     };
     const handleMouseUp = event => {
+        if (mouseDown) {
+            if (penType === 'line' || penType === 'rectangle' || penType === 'fill-rect') {
+                sendPixel()
+            }
+        }
         setMouseDown(false)
     };
     
@@ -83,18 +147,24 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
             x: event.clientX,
             y: event.clientY,
         });
+        if (penType === 'line' || penType === 'rectangle' || penType === 'fill-rect') {
+            return;
+        }
         if (mouseDown) {
             sendPixel()
         }
     };
+        
     function sendPixel() {
         const msg = {
+            xStart: startPoint.x,
+            yStart: startPoint.y,
             x: coords.x,
             y: coords.y,
             color: selectedColor,
             size: penSize,
             type: penType,
-            uuid: uuidParam
+            uuid: uuidParam,
         }
         send(JSON.stringify(msg))
     }
@@ -109,9 +179,13 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     
     function onMessageReceived(msg) {
         msg = JSON.parse(msg);
+        console.log("Received message: ", msg);
         // Basic drawing
-        if (msg.hasOwnProperty('color') && msg.hasOwnProperty('size') && msg.hasOwnProperty('type')){
-            drawOnCanvas(msg.x, msg.y, msg.color, msg.size, msg.type);
+        if (msg.hasOwnProperty('text')) {
+            setTextContent(textContent + msg.text);
+        }
+        if (msg.hasOwnProperty('type') && msg.type === 'text') {
+            if (!textCursorActive) setTextCursorActive(true);
         }
         // Special commands
         else if (msg.hasOwnProperty('command')) {
@@ -119,47 +193,80 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
                 clearCanvas();
             }
             if (msg.command === 'rtt') {
-                let rtt = 0 + Date.now() - msg.time;
+                let rtt = Date.now() - msg.time;
                 setRoundTripTime(rtt);
-            }
-            else if (msg.command === 'fill') {
+            } else if (msg.command === 'fill') {
                 drawFillColor(msg.color);
+            } else if (msg.command === 'back') {
+                oneStepBack();
             }
+        }
+        else {
+            drawOnCanvas(msg.x, msg.y, msg.color, msg.size, msg.type, msg.xStart, msg.yStart);
+            setPoints(prevPoints => [...prevPoints, {
+                x: msg.x, y: msg.y, color: msg.color, size: msg.size, type: msg.type, 
+                xStart: msg.xStart, yStart: msg.yStart}])
         }
     }
 
     registerOnMessageCallback(onMessageReceived.bind(this));
     
-    function drawOnCanvas(x, y, color, size, type) {
+    function drawOnCanvas(x, y, color, size, type, xStart, yStart) {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d', {alpha: true});
         ctx.fillStyle = color;
         if (type === 'eraser') {
-            clearRound(ctx, x, y-55, size)
+            clearRound(ctx, x, y-SCREEN_CORR_FACTOR, size)
         }
         else if (type === 'round') {
             ctx.beginPath();
-            ctx.arc(x, y-55, size, 0, 2 * Math.PI);
+            ctx.arc(x, y-SCREEN_CORR_FACTOR, size, 0, 2 * Math.PI);
             ctx.fill();
         }
         else if (type === 'square') {
-            ctx.fillRect(x-size/2, y-penSize/2-55, size, size);
+            ctx.fillRect(x-size/2, y-penSize/2-SCREEN_CORR_FACTOR, size, size);
         }
         else if (type === 'spray') {
-            drwaRoundSprayOnCanvas(ctx, x, y, color, size);
+            drawRoundSprayOnCanvas(ctx, x, y, color, size);
+        }
+        else if (type === 'line') {
+            ctx.beginPath();
+            ctx.moveTo(xStart, yStart-SCREEN_CORR_FACTOR);
+            ctx.lineTo(x, y-SCREEN_CORR_FACTOR);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = size;
+            ctx.stroke();
+        }
+        else if (type === 'rectangle') {
+            const xDist = Math.abs(x - xStart)
+            const yDist = Math.abs(y - yStart)
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = size;
+            if (xStart < x && yStart < y) {
+                ctx.rect(xStart, yStart - SCREEN_CORR_FACTOR, xDist, yDist);
+                ctx.stroke();
+            }
+        }
+        else if (type === 'fill-rect') {
+            const xDist = Math.abs(x - xStart)
+            const yDist = Math.abs(y - yStart)
+            if (xStart < x && yStart < y) {
+                ctx.fillRect(xStart, yStart - SCREEN_CORR_FACTOR, xDist, yDist);
+            }
         }
     }
     
-    function drwaRoundSprayOnCanvas(ctx, x, y, color, size) {
+    function drawRoundSprayOnCanvas(ctx, x, y, color, size) {
         ctx.save(); // Save the current state
         ctx.beginPath();
-        ctx.arc(x, y-55, size, 0, 2 * Math.PI);
+        ctx.arc(x, y-SCREEN_CORR_FACTOR, size, 0, 2 * Math.PI);
         ctx.clip(); // Create a clipping region
 
         for (let i = 0; i < size; i++) {
             let randomX = x - size + Math.random() * 2 * size ;
             let randomY = y - size + Math.random() * 2 * size ;
-            ctx.fillRect(randomX, randomY-55, 1, 1);
+            ctx.fillRect(randomX, randomY-SCREEN_CORR_FACTOR, 1, 1);
         }
         ctx.restore(); // Restore the state
     }
@@ -177,6 +284,7 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        setPoints([]);
     }
     
     function saveCanvasToPng() {
@@ -193,9 +301,34 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
         // set drawing style to opaque
-        ctx.globalCompositeOperation = 'source-over';
+        // ctx.globalCompositeOperation = 'source-over';
         ctx.fillStyle = color;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // draw current points if any
+        points.forEach(point => {
+            drawOnCanvas(point.x, point.y, point.color, point.size, point.type, point.xStart, point.yStart);
+        });
+    }
+    
+    function copyToClipboard() {
+        // get host address from window.location
+        const host = process.env.NODE_ENV === 'production' ? window.location.host : 'localhost:3000';
+        const fullUrl = `${window.location.protocol}//${host}/draw/${uuidParam}`;
+        navigator.clipboard.writeText(fullUrl)
+            .then(() => {
+                setCopySuccess('Copied!');
+                setTimeout(() => setCopySuccess(null), 2000); // remove the message after 2 seconds
+            })
+            .catch(err => {
+                setCopySuccess('Failed to copy!');
+            });
+    }
+
+    function oneStepBack(){
+        if (points.length > 0){
+            setPoints(prevPoints => prevPoints.slice(0, -1));
+            drawFillColor(fillColor);
+        }
     }
 
     function handleClearCommand() {
@@ -206,11 +339,20 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
     }
 
     function handleTouchStart(e) {
-        const touch = e.touches[0];
-        setCoords({
-            x: touch.clientX,
-            y: touch.clientY,
-        });
+        if (penType === 'line') {
+            const touch = e.touches[0];
+            setStartPoint({
+                x: touch.clientX,
+                y: touch.clientY,
+            });
+        }
+        else{
+            const touch = e.touches[0];
+            setCoords({
+                x: touch.clientX,
+                y: touch.clientY,
+            });
+        }
     }
     
     function handleTouch(e) {
@@ -231,20 +373,17 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
         send(JSON.stringify(msg))
     }
 
-    function copyToClipboard() {
-        // get host address from window.location
-        const host = process.env.NODE_ENV === 'production' ? window.location.host : 'localhost:3000';
-        const fullUrl = `${window.location.protocol}//${host}/draw/${uuidParam}`;
-        navigator.clipboard.writeText(fullUrl)
-            .then(() => {
-                setCopySuccess('Copied!');
-                setTimeout(() => setCopySuccess(null), 2000); // remove the message after 2 seconds
-            })
-            .catch(err => {
-                setCopySuccess('Failed to copy!');
-            });
+    function handleStepBack() {
+        const msg = {
+            command: "back"
+        }
+        send(JSON.stringify(msg))
     }
-
+    
+    function handleTextCursor(){
+        setTextCursorActive(!textCursorActive);
+    }
+    
     return (
         <div>
             <div className={"container-draw"}
@@ -261,7 +400,7 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
 
             </div>
 
-            <Toolbar
+            <DrawToolbar
                 handleClearCommand={handleClearCommand}
                 saveCanvasToPng={saveCanvasToPng}
                 fillColor={fillColor}
@@ -274,20 +413,15 @@ export default function Draw({ initColor="#EE1133" , bgColor="#FFFFFF"}) {
                 setPenSize={setPenSize}
                 copyToClipboard={copyToClipboard}
                 copySuccess={copySuccess}
+                oneStepBack={handleStepBack}
             />
+                        
+            <DrawMenuToolbar copySuccess={copySuccess} copyToClipboard={copyToClipboard} roundTripTime={roundTripTime}
+                             saveCanvasToPng={saveCanvasToPng} handleClearCommand={handleClearCommand} oneStepBack={oneStepBack}/>
 
-            <div className={"time-container"}>
-                {roundTripTime ? <div>RTT: {roundTripTime} ms</div> : null}
-            </div>
-            
-            <div className={"link-container"}>
-                <div className={"link-text-container"}>
-                        {copySuccess ? <div className={"copy-info-tag"}>{copySuccess}</div> : <span>Copy Link:</span>}
-                </div>
-                    <button className={"tool-button"} onClick={copyToClipboard}>
-                        <img className={"small-icon"} alt="" src={copyIcon}></img>
-                    </button>
-                </div>
-            </div>
-            )
-            }
+            {textCursorActive ? 
+                <TextCursor x={coords.x-5+textContent.length} y={coords.y-penSize*2} color={selectedColor} size={penSize} textContent={textContent}/> : null}
+        
+        </div>
+    )
+}

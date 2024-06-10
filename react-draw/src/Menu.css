@@ -1,7 +1,15 @@
+.container-column-center {
+    margin-top: 100px;
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    align-items: center;
+}
+
 .menu {
     padding: 50px;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-content: space-evenly;
     margin: 10px;
     height: 5vh;

@@ -6,11 +6,12 @@ import Menu from "./Menu";
 import LogoSpinner from "./LogoSpinner";
 
 import './App.css';
-import refreshLogo from './media/repeat.svg';
-import Footer from "./Footer";
+import Physics from "./Physics";
 
 function App() {
     const [uuid, setUuid] = useState(null);
+    const [buttonLinks, setButtonLinks] = useState([`/physics`, `/draw`]);
+    const [buttonNames, setButtonNames] = useState(["Physics", "Draw"]);
     
     function getNewUuid() {
         // get uuid from /api/getuuid
@@ -29,6 +30,7 @@ function App() {
     }
     
     useEffect(() => {
+        //document.documentElement.style.setProperty('--accentColor', '#FF2222');
         getNewUuid();
     }, []);
 
@@ -37,22 +39,11 @@ function App() {
         <Router>
             <div>
                 
-                <nav>
-                    <ul>
-                        <li>
-                            <Link to="/">Start</Link>
-                        </li>
-                        <li>
-                            {uuid ? <Link to={`/draw/${uuid}`}>Draw</Link> : null}
-                        </li>
-                    </ul>
-                </nav>
-                
                 <Routes>
-                    <Route path="/" element={uuid ? <Menu buttonLink={`/draw/${uuid}`} uuid={uuid} getNewUuid={getNewUuid}/> : null}/>
+                    <Route path="/" element={<Menu buttonLinks={buttonLinks} buttonNames={buttonNames} uuid={uuid}/>}/>
                     <Route path="/draw/:uuidParam" element={<Draw initColor={"#61dafb"} bgColor={"#EEEEEE"}/>}/>
+                    <Route path="/physics" element={<Physics initColor={"#FF2222"} bgColor={"#EEEEEE"}/>}/>
                 </Routes>
-                {uuid ? null : <LogoSpinner />}
                 
             </div>
         </Router>
